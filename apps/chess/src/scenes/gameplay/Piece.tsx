@@ -114,7 +114,6 @@ export function PieceModel(
     material?: keyof GLTFResult["materials"]
   }
 ) {
-  // const group = THREE.Group!;
   const { nodes, materials } = useGLTF(
     "/models/low_poly_chess_set/pieces.glb"
   ) as unknown as GLTFResult

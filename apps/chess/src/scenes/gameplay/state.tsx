@@ -2,15 +2,19 @@ import { RigidBodyEntity } from "@hmans/physics3d"
 import { Tag } from "miniplex"
 import { makeStore } from "statery"
 import { Object3D, Vector3 } from "three"
+import { DEFAULT_POSITION } from "~/lib/chess/constants"
+import { loadFen } from "~/lib/chess/state"
 import { createECS } from "../../vendor/miniplex-react/createECS"
-
+import { Square } from "~/lib/chess"
 export enum Layers {
   Player,
   Asteroid
 }
 
 export const gameplayStore = makeStore({
-  player: null as Object3D | null
+  player: null as Object3D | null,
+  board: loadFen(DEFAULT_POSITION)!,
+  selectedSquare: "none" as Square | "none"
 })
 
 export type Entity = {

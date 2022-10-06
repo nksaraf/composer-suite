@@ -1,15 +1,26 @@
-import { GroupProps, MeshProps } from "@react-three/fiber"
+import { GroupProps, MeshProps, ThreeEvent } from "@react-three/fiber"
+import { useStore } from "statery"
 import { DEFAULT_POSITION } from "~/lib/chess/constants"
-import { Color, PieceSymbol } from "~/lib/chess/types"
+import { Color, PieceSymbol, State } from "~/lib/chess/types"
+import { store } from "~/state"
 import {
   algebraic,
   Chess,
   file,
   rank,
   Square as SquareType,
+  squareColor,
   SQUARES
 } from "../../lib/chess"
-import { getPiece, loadFen, makeMove, sanToMove } from "../../lib/chess/state"
+import {
+  generateMoves,
+  getPiece,
+  loadFen,
+  makeMove,
+  makePretty,
+  sanToMove
+} from "../../lib/chess/state"
+import { gameplayStore } from "./state"
 // import { getGame } from '~/lib/game'
 // import { Select } from '../modules/solid-postprocessing'
 // import { T } from 'solid-three'
@@ -31,8 +42,6 @@ export type BoardProps = {
   squareSize: number
 }
 
-const board = loadFen(DEFAULT_POSITION)!
-
 export type PieceProps = {
   square: SquareType
   piece: PieceSymbol
@@ -43,6 +52,48 @@ export type SquareProps = {
   square: SquareType
   size: number
 } & MeshProps
+
+export function useChessSquare({
+  square
+}: // makeMove
+{
+  square: SquareType
+  // makeMove?: boolean
+}) {
+  const { board, selectedSquare } = useStore(gameplayStore)
+  const moves = generatePrettyMoves(board, selectedSquare)
+  const piece = getPiece(board, square)
+  const availableMove = moves.find((m) => m.to === square)
+
+  const isMovable = availableMove ? true : false
+
+  const turn = board.turn
+
+  const isSelectable = piece ? piece.color === turn : false
+  const isKilling = isMovable && piece && piece.color !== turn
+  const isSelected = selectedSquare === square
+
+  return {
+    isSelectable,
+    isKilling,
+    isMovable,
+    availableMove,
+    isSelected,
+    isSquareHovered: false,
+    turn,
+    onPointerDown: (e: ThreeEvent<PointerEvent>) => {
+      if (isMovable) {
+        gameplayStore.set({
+          board: makeMove(board, sanToMove(board, availableMove!.san)!)
+        })
+      }
+      if (piece?.color === turn) {
+        gameplayStore.set({ selectedSquare: square })
+      }
+      e.stopPropagation()
+    }
+  }
+}
 
 export const BoardSquare = (
   props: {
@@ -66,6 +117,7 @@ export const BoardSquare = (
 
   let y = rank(index)
   let x = file(index)
+  const { board } = useStore(gameplayStore)
 
   const piece = getPiece(board, props.square)
 
@@ -117,6 +169,12 @@ export const BoardSquare = (
       </Show> */}
     </>
   )
+}
+
+function generatePrettyMoves(board: State, square: SquareType | "none") {
+  if (square === "none") return []
+  let moves = generateMoves(board, { square })
+  return moves.map((move) => makePretty(board, move))
 }
 
 export function Board(props: BoardProps) {

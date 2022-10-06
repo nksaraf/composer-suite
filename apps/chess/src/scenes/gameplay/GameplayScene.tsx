@@ -15,22 +15,50 @@ import { AgeSystem } from "./systems/AgeSystem"
 import { BulletSystem } from "./systems/BulletSystem"
 import { DestroyAfterSystem } from "./systems/DestroyAfterSystem"
 import { ECSFlushSystem } from "./systems/ECSFlushSystem"
-import { Board, SquareProps } from "./Board"
+import { Board, SquareProps, useChessSquare } from "./Board"
 import { OrbitControls } from "@react-three/drei"
 import { squareColor } from "~/lib/chess"
 import { Piece } from "./Piece"
 
+const Colors = {
+  gold: new Color("gold"),
+  white: new Color("white"),
+  black: new Color("black"),
+  red: new Color("red"),
+  blue: new Color("blue"),
+  green: new Color("green")
+}
+
 function Square({ size, square, ...props }: SquareProps) {
   const color = squareColor(square)
+  const {
+    isKilling,
+    onPointerDown,
+    isMovable,
+    isSelectable,
+    isSelected,
+    isSquareHovered
+  } = useChessSquare({
+    square
+  })
   return (
-    <mesh {...props} scale={size}>
-      <boxBufferGeometry args={[1, 1, 1]} />
+    <mesh {...props} scale={size} onPointerDown={onPointerDown}>
+      <boxGeometry args={[1, 1, 1]} />
       <meshStandardMaterial
         color={
-          {
-            light: "#d7ff7e",
-            dark: "#456f00"
-          }[color!]
+          isMovable && isSquareHovered
+            ? Colors.green
+            : isSquareHovered && isSelectable
+            ? Colors.gold
+            : isSelected
+            ? Colors.gold
+            : isKilling
+            ? Colors.red
+            : isMovable
+            ? Colors.blue
+            : color == "light"
+            ? Colors.white
+            : Colors.green
         }
       />
     </mesh>
