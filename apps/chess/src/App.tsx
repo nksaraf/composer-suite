@@ -6,6 +6,7 @@ import { Stage } from "./configuration"
 import { useCapture } from "./lib/useCapture"
 import { GameplayScene } from "./scenes/gameplay/GameplayScene"
 import { MenuScene } from "./scenes/menu/MenuScene"
+import { WorldScene } from "./scenes/world/WorldScene"
 import { GameState, store } from "./state"
 import { Perf } from "r3f-perf"
 
@@ -28,8 +29,12 @@ export const App = () => (
             <MenuScene />
           </GameState.Match>
 
-          <GameState.Match state="gameplay">
+          <GameState.Match state="chess">
             <GameplayScene />
+          </GameState.Match>
+
+          <GameState.Match state="world">
+            <WorldScene />
           </GameState.Match>
 
           <Perf matrixUpdate />
