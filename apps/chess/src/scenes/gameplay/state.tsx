@@ -1,20 +1,18 @@
-import { RigidBodyEntity } from "@hmans/physics3d"
-import { Tag } from "miniplex"
+import { RigidBodyApi } from "@react-three/rapier"
 import { makeStore } from "statery"
-import { Object3D, Vector3 } from "three"
-import { DEFAULT_POSITION } from "~/lib/chess/constants"
-import { loadFen } from "~/lib/chess/state"
-import { createECS } from "../../vendor/miniplex-react/createECS"
-import { Square } from "~/lib/chess"
+import { AudioListener, Object3D, Vector3 } from "three"
+import { createECS } from "miniplex-react"
+import { Tag } from "miniplex"
+
 export enum Layers {
   Player,
-  Asteroid
+  Bullet,
+  Asteroid,
+  Pickup
 }
 
 export const gameplayStore = makeStore({
-  player: null as Object3D | null,
-  board: loadFen(DEFAULT_POSITION)!,
-  selectedSquare: "none" as Square | "none"
+  listener: null as AudioListener | null
 })
 
 export type Entity = {
@@ -23,10 +21,15 @@ export type Entity = {
     scale: number
   }
 
-  isBullet?: Tag
-  isDebris?: Tag
-  isSparks?: Tag
-  isNebula?: Tag
+  player?: Tag
+  bullet?: JSX.Element
+  debris?: JSX.Element
+  sparks?: JSX.Element
+  smoke?: JSX.Element
+  pickup?: JSX.Element
+  asteroidExplosion?: JSX.Element
+
+  sound?: JSX.Element
 
   velocity?: Vector3
   health?: number
@@ -34,7 +37,7 @@ export type Entity = {
   jsx?: JSX.Element
 
   sceneObject?: Object3D
-  rigidBody?: RigidBodyEntity
+  rigidBody?: RigidBodyApi
 
   age?: number
   destroyAfter?: number

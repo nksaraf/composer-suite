@@ -1,11 +1,16 @@
 import * as RAPIER from "@dimforge/rapier3d-compat"
-import { interactionGroups, usePhysicsWorld } from "@hmans/physics3d"
 import { useFrame } from "@react-three/fiber"
-import { between } from "randomish"
+import { interactionGroups, useRapier } from "@react-three/rapier"
+import { between, chance } from "randomish"
 import { Vector3 } from "three"
 import { Stage } from "../../../configuration"
-import { spawnAsteroid, spawnDebris, spawnSparks } from "../actions"
+import { spawnDebris } from "../actions"
+import { spawnAsteroid } from "../Asteroids"
+import { spawnPickup } from "../Pickups"
 import { ECS, Layers } from "../state"
+import { spawnAsteroidExplosion } from "../vfx/AsteroidExplosions"
+import { spawnSmokeVFX } from "../vfx/SmokeVFX"
+import { spawnSparks } from "../vfx/Sparks"
 
 const hittableEntities = ECS.world.archetype("health", "rigidBody")
 
@@ -17,16 +22,13 @@ const ray = new RAPIER.Ray(
 )
 
 export const BulletSystem = () => {
-  const bullets = ECS.world.archetype("isBullet", "sceneObject", "velocity")
-  const { world } = usePhysicsWorld()
+  const bullets = ECS.world.archetype("bullet", "sceneObject")
+
+  const context = useRapier()
+  const world = context.world.raw()
 
   useFrame(function bulletSystem(_, dt) {
     for (const bullet of bullets) {
-      const { sceneObject } = bullet
-      if (!sceneObject) return
-
-      sceneObject.position.addScaledVector(bullet.velocity, dt)
-
       /* COLLISIONS */
       /* Perform hit test */
       ray.origin = bullet.sceneObject.position
@@ -40,7 +42,7 @@ export const BulletSystem = () => {
         10,
         true,
         undefined,
-        interactionGroups(Layers.Player)
+        interactionGroups(Layers.Bullet, Layers.Asteroid)
       )
 
       if (hit) {
@@ -51,12 +53,18 @@ export const BulletSystem = () => {
 
         /* Spawn VFX */
         spawnDebris(bullet.sceneObject.position, bullet.sceneObject.quaternion)
-        spawnSparks(bullet.sceneObject.position, bullet.sceneObject.quaternion)
+        spawnSparks({
+          position: bullet.sceneObject.position,
+          quaternion: bullet.sceneObject.quaternion
+        })
+        spawnSmokeVFX({
+          position: bullet.sceneObject.position
+        })
 
         /* Find the entity that was hit */
         const otherBody = hit.collider.parent()
         const otherEntity = hittableEntities.entities.find(
-          (e) => e.rigidBody.body === otherBody
+          (e) => e.rigidBody.raw() === otherBody
         )
 
         if (otherEntity) {
@@ -68,10 +76,24 @@ export const BulletSystem = () => {
 
             if (otherEntity.asteroid) {
               const { scale } = otherEntity.asteroid
+              const position = otherEntity
+                .rigidBody!.raw()
+                .translation() as Vector3
+
+              spawnAsteroidExplosion({
+                position: new Vector3(position.x, position.y, position.z),
+                scale: otherEntity.asteroid.scale
+              })
+
+              if (chance(scale)) {
+                spawnPickup({
+                  position: otherEntity.sceneObject!.getWorldPosition(
+                    new Vector3()
+                  )
+                })
+              }
 
               if (scale > 0.5) {
-                const position = otherEntity.rigidBody!.body.translation()
-
                 const number = between(3, 8)
                 const step = (Math.PI * 2) / number
 

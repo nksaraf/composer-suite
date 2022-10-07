@@ -1,70 +1,100 @@
+import { useLoader } from "@react-three/fiber"
 import {
   ConvexHullCollider,
   interactionGroups,
   RigidBody
-} from "@hmans/physics3d"
-import { useGLTF } from "@react-three/drei"
+} from "@react-three/rapier"
 import { between, plusMinus } from "randomish"
-import { useLayoutEffect } from "react"
+import { startTransition, useLayoutEffect } from "react"
 import { Material, Mesh, Quaternion, Vector3 } from "three"
-import { Particle, InstancedParticles } from "vfx-composer-r3f"
-import { spawnAsteroid } from "./actions"
+import { GLTFLoader } from "three-stdlib"
+import { InstancedParticles, Particle } from "vfx-composer-r3f"
 import { ECS, Layers } from "./state"
 
 const tmpQuaterion = new Quaternion()
 
-export const Asteroids = (props: { initial: number }) => {
-  const gltf = useGLTF("/models/asteroid03.gltf")
+export const Asteroids = ({
+  initial,
+  capacity = initial * 10
+}: {
+  initial: number
+  capacity?: number
+}) => {
+  const gltf = useLoader(GLTFLoader, "/models/asteroid03.gltf")
   const mesh = gltf.scene.children[0] as Mesh
 
-  const { entities } = ECS.useArchetype("asteroid")
-
-  useLayoutEffect(() => {
-    /* Spawn a bunch of asteroids */
-    for (let i = 0; i < props.initial; i++) {
-      spawnAsteroid(
-        new Vector3(plusMinus(100), plusMinus(100), 0),
-        between(0.8, 2)
-      )
-    }
-  }, [])
+  const entities = useLotsOfAsteroidsAndAlsoCleanThemUp(initial)
 
   return (
     <InstancedParticles
-      capacity={10000}
-      geometry={mesh.geometry}
-      material={mesh.material as Material}
-      matrixAutoUpdate={false}
+      capacity={capacity}
+      geometry={mesh.geometry.clone()}
+      material={(mesh.material as Material).clone()}
     >
       <ECS.Entities entities={entities}>
         {({ asteroid }) => (
           <ECS.Component name="rigidBody">
             <RigidBody
-              position={asteroid?.spawnPosition}
+              position={asteroid.spawnPosition}
+              scale={asteroid.scale}
               quaternion={tmpQuaterion.random()}
-              scale={asteroid!.scale}
               angularDamping={2}
               linearDamping={0.5}
               enabledTranslations={[true, true, false]}
               enabledRotations={[true, true, true]}
             >
-              <group matrixAutoUpdate={false}>
-                <ConvexHullCollider
-                  density={3}
-                  collisionGroups={interactionGroups(Layers.Asteroid, [
-                    Layers.Asteroid,
-                    Layers.Player
-                  ])}
-                  points={
-                    mesh.geometry.attributes.position.array as Float32Array
-                  }
-                />
-                <Particle />
-              </group>
+              <ConvexHullCollider
+                density={3}
+                collisionGroups={interactionGroups(Layers.Asteroid, [
+                  Layers.Asteroid,
+                  Layers.Player,
+                  Layers.Bullet
+                ])}
+                args={[mesh.geometry.attributes.position.array as Float32Array]}
+              />
+              <ECS.Component name="sceneObject">
+                <Particle matrixAutoUpdate={false} />
+              </ECS.Component>
             </RigidBody>
           </ECS.Component>
         )}
       </ECS.Entities>
     </InstancedParticles>
   )
+}
+
+export const spawnAsteroid = (position: Vector3, scale: number = 1) => {
+  ECS.world.createEntity({
+    asteroid: {
+      spawnPosition: position,
+      scale
+    },
+    health: 250 * scale
+  })
+}
+
+const useLotsOfAsteroidsAndAlsoCleanThemUp = (count: number) => {
+  const { entities } = ECS.useArchetype("asteroid")
+
+  useLayoutEffect(() => {
+    /* Spawn a bunch of asteroids */
+    startTransition(() => {
+      for (let i = 0; i < count; i++) {
+        spawnAsteroid(
+          new Vector3(plusMinus(100), plusMinus(100), 0),
+          between(0.8, 2)
+        )
+      }
+    })
+
+    return () => {
+      /* Destroy all asteroids */
+      startTransition(() => {
+        for (let i = entities.length; i > 0; i--)
+          ECS.world.destroyEntity(entities[i - 1])
+      })
+    }
+  }, [])
+
+  return entities
 }

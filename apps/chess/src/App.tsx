@@ -1,45 +1,34 @@
-import { Loader, PerspectiveCamera } from "@react-three/drei"
-import { Suspense } from "react"
-import * as RC from "render-composer"
-import { PostProcessing } from "./common/PostProcessing"
-import { Stage } from "./configuration"
-import { useCapture } from "./lib/useCapture"
-import { GameplayScene } from "./scenes/gameplay/GameplayScene"
-import { MenuScene } from "./scenes/menu/MenuScene"
-import { WorldScene } from "./scenes/world/WorldScene"
-import { GameState, store } from "./state"
-import { Perf } from "r3f-perf"
+import * as UI from "ui-composer"
+import { StartScreen } from "./lib/StartScreen"
 
-export const App = () => (
-  <>
-    <Loader />
+/* We need to make sure that this file imports _something_ from @react-three/fiber
+because otherwise Vite gets confused. :( */
+import "@react-three/fiber"
+import { Game } from "./Game"
+import { Sidebar } from "./editor/Sidebar"
+import { useState } from "react"
 
-    <RC.Canvas dpr={1}>
-      <RC.RenderPipeline updatePriority={Stage.Render}>
-        <PostProcessing />
-        <Suspense>
-          <PerspectiveCamera
-            position={[0, 0, 20]}
-            rotation-y={-0.8}
-            makeDefault
-            ref={useCapture(store, "camera")}
-          />
+export const App = () => {
+  const [editorEnabled, setEditorEnabled] = useState(true)
 
-          <GameState.Match state="menu">
-            <MenuScene />
-          </GameState.Match>
+  return (
+    <StartScreen>
+      <UI.Root>
+        <UI.HorizontalGroup>
+          <div style={{ flex: 4 }}>
+            <Game />
+          </div>
 
-          <GameState.Match state="chess">
-            <GameplayScene />
-          </GameState.Match>
-
-          <GameState.Match state="world">
-            <WorldScene />
-          </GameState.Match>
-
-          <Perf matrixUpdate />
-        </Suspense>
-      </RC.RenderPipeline>
-    </RC.Canvas>
-  </>
-)
+          {editorEnabled && (
+            <>
+              <UI.HorizontalResizer />
+              <UI.VerticalGroup css={{ flex: "1 1 auto" }}>
+                <Sidebar />
+              </UI.VerticalGroup>
+            </>
+          )}
+        </UI.HorizontalGroup>
+      </UI.Root>
+    </StartScreen>
+  )
+}

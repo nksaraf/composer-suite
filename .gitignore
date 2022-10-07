@@ -27,3 +27,5 @@ apps/website/docs/reference/
 *.njsproj
 *.sln
 *.sw?
+
+.scrap
