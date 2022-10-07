@@ -47,11 +47,14 @@ export const Asteroids = ({
                 density={3}
                 collisionGroups={interactionGroups(Layers.Asteroid, [
                   Layers.Asteroid,
-                  Layers.Player
+                  Layers.Player,
+                  Layers.Bullet
                 ])}
                 args={[mesh.geometry.attributes.position.array as Float32Array]}
               />
-              <Particle />
+              <ECS.Component name="sceneObject">
+                <Particle matrixAutoUpdate={false} />
+              </ECS.Component>
             </RigidBody>
           </ECS.Component>
         )}
@@ -66,7 +69,7 @@ export const spawnAsteroid = (position: Vector3, scale: number = 1) => {
       spawnPosition: position,
       scale
     },
-    health: 100 * scale
+    health: 250 * scale
   })
 }
 
@@ -87,7 +90,8 @@ const useLotsOfAsteroidsAndAlsoCleanThemUp = (count: number) => {
     return () => {
       /* Destroy all asteroids */
       startTransition(() => {
-        for (const entity of entities) ECS.world.destroyEntity(entity)
+        for (let i = entities.length; i > 0; i--)
+          ECS.world.destroyEntity(entities[i - 1])
       })
     }
   }, [])

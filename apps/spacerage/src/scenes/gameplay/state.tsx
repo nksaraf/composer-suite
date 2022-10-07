@@ -6,11 +6,12 @@ import { Tag } from "miniplex"
 
 export enum Layers {
   Player,
-  Asteroid
+  Bullet,
+  Asteroid,
+  Pickup
 }
 
 export const gameplayStore = makeStore({
-  player: null as Object3D | null,
   listener: null as AudioListener | null
 })
 
@@ -24,6 +25,8 @@ export type Entity = {
   bullet?: JSX.Element
   debris?: JSX.Element
   sparks?: JSX.Element
+  smoke?: JSX.Element
+  pickup?: JSX.Element
   asteroidExplosion?: JSX.Element
 
   sound?: JSX.Element

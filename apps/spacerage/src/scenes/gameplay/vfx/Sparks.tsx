@@ -37,7 +37,7 @@ export const Sparks = () => {
       </Composable.MeshStandardMaterial>
 
       {/* Render all the sparks entities */}
-      <ECS.ArchetypeEntities archetype={["sparks"]}>
+      <ECS.ArchetypeEntities archetype="sparks">
         {({ sparks }) => sparks}
       </ECS.ArchetypeEntities>
     </InstancedParticles>
@@ -48,9 +48,9 @@ export const SparksEmitter = (props: EmitterProps) => (
   <Emitter
     {...props}
     rate={Infinity}
-    limit={between(2, 8)}
-    setup={() => {
-      lifetime.setLifetime(between(0.2, 0.8), upTo(0.1))
+    limit={between(3, 10)}
+    setup={({ mesh }) => {
+      lifetime.write(mesh, between(0.2, 2), upTo(0.1))
     }}
   >
     <PositionalAudio

@@ -1,13 +1,15 @@
 import * as RAPIER from "@dimforge/rapier3d-compat"
 import { useFrame } from "@react-three/fiber"
 import { interactionGroups, useRapier } from "@react-three/rapier"
-import { between } from "randomish"
+import { between, chance } from "randomish"
 import { Vector3 } from "three"
 import { Stage } from "../../../configuration"
 import { spawnDebris } from "../actions"
 import { spawnAsteroid } from "../Asteroids"
+import { spawnPickup } from "../Pickups"
 import { ECS, Layers } from "../state"
 import { spawnAsteroidExplosion } from "../vfx/AsteroidExplosions"
+import { spawnSmokeVFX } from "../vfx/SmokeVFX"
 import { spawnSparks } from "../vfx/Sparks"
 
 const hittableEntities = ECS.world.archetype("health", "rigidBody")
@@ -40,7 +42,7 @@ export const BulletSystem = () => {
         10,
         true,
         undefined,
-        interactionGroups(Layers.Player)
+        interactionGroups(Layers.Bullet, Layers.Asteroid)
       )
 
       if (hit) {
@@ -54,6 +56,9 @@ export const BulletSystem = () => {
         spawnSparks({
           position: bullet.sceneObject.position,
           quaternion: bullet.sceneObject.quaternion
+        })
+        spawnSmokeVFX({
+          position: bullet.sceneObject.position
         })
 
         /* Find the entity that was hit */
@@ -79,6 +84,14 @@ export const BulletSystem = () => {
                 position: new Vector3(position.x, position.y, position.z),
                 scale: otherEntity.asteroid.scale
               })
+
+              if (chance(scale)) {
+                spawnPickup({
+                  position: otherEntity.sceneObject!.getWorldPosition(
+                    new Vector3()
+                  )
+                })
+              }
 
               if (scale > 0.5) {
                 const number = between(3, 8)
