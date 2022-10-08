@@ -12,6 +12,9 @@ export const Sidebar = () => (
         <UI.Button onClick={() => GameState.enter("gameplay")}>
           Gameplay Scene
         </UI.Button>
+        <UI.Button onClick={() => GameState.enter("world")}>
+          World Scene
+        </UI.Button>
       </UI.VerticalGroup>
     </UI.Panel>
 

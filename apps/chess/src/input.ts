@@ -188,8 +188,8 @@ const createSpaceRageController = () => {
     }
 
     /* Apply some processing */
-    pipe(controls.move, applyDeadzone(0.3))
-    pipe(controls.aim, applyDeadzone(0.3))
+    // pipe(controls.move, applyDeadzone(0.3))
+    // pipe(controls.aim, applyDeadzone(0.3))
   }
 
   const dispose = () => {}

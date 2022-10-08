@@ -39,7 +39,7 @@ export const PlayerSystem = () => {
     }
 
     /* Thrust */
-    const thrust = tmpVec3.set(move.x * 100, move.y * 100, 0)
+    const thrust = tmpVec3.set(move.x * 10, 0, move.y * 10)
 
     body.addForce(thrust, true)
   }, Stage.Early)

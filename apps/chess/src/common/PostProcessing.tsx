@@ -18,7 +18,7 @@ export const PostProcessing = () => {
       <RC.SMAAEffect />
       <RC.SelectiveBloomEffect intensity={4} luminanceThreshold={1} />
       {sun && <RC.GodRaysEffect lightSource={sun} />}
-      <RC.LensDirtEffect texture={texture} />
+      {/* <RC.LensDirtEffect texture={texture} /> */}
       <RC.VignetteEffect />
     </RC.EffectPass>
   )

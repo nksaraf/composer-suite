@@ -10,6 +10,7 @@ import { useCapture } from "./lib/useCapture"
 import { GameState, store } from "./state"
 const MenuScene = lazy(() => import("./scenes/menu/MenuScene"))
 const GameplayScene = lazy(() => import("./scenes/gameplay/GameplayScene"))
+const WorldScene = lazy(() => import("./scenes/world/WorldScene"))
 
 const Controller = () => {
   useFrame(() => {
@@ -47,6 +48,12 @@ export const Game = () => {
               <GameState.Match state="gameplay">
                 <Suspense>
                   <GameplayScene />
+                </Suspense>
+              </GameState.Match>
+
+              <GameState.Match state="world">
+                <Suspense>
+                  <WorldScene />
                 </Suspense>
               </GameState.Match>
 
