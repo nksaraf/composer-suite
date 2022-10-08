@@ -1,5 +1,6 @@
 import * as UI from "ui-composer"
 import { GameState, SidebarTunnel } from "../state"
+import { MiniplexSystemsInspector } from "../lib/miniplex-systems-runner/MiniplexSystemsInspector"
 
 export const Sidebar = () => (
   <>
@@ -14,6 +15,8 @@ export const Sidebar = () => (
         </UI.Button>
       </UI.VerticalGroup>
     </UI.Panel>
+
+    <MiniplexSystemsInspector />
 
     <SidebarTunnel.Out />
   </>

@@ -1,200 +1,66 @@
-import { pipe } from "fp-ts/lib/function"
-import { Event } from "input-composer"
+import {
+  Controller,
+  GamepadDevice,
+  KeyboardDevice,
+  ValueControl,
+  VectorControl
+} from "input-composer"
 
-/* Experimentation for a future Input Composer */
-
-export interface IVector {
-  x: number
-  y: number
-}
-
-export const normalizeVector = (v: IVector) => {
-  const length = Math.sqrt(v.x * v.x + v.y * v.y)
-
-  if (length > 0) {
-    v.x /= length
-    v.y /= length
+class SpaceRageController extends Controller {
+  devices = {
+    keyboard: new KeyboardDevice(),
+    gamepad: new GamepadDevice(0)
   }
 
-  return v
-}
+  controls = {
+    move: new VectorControl(),
+    aim: new VectorControl(),
+    fire: new ValueControl()
+  }
 
-export const copyVector = (source: IVector) => (v: IVector) => {
-  v.x = source.x
-  v.y = source.y
-  return v
-}
+  activeScheme: "keyboard" | "gamepad" = "gamepad"
 
-export const applyDeadzone =
-  (threshold = 0.1) =>
-  (v: IVector) => {
-    const length = Math.sqrt(v.x * v.x + v.y * v.y)
+  constructor() {
+    super()
 
-    if (length < threshold) {
-      v.x = 0
-      v.y = 0
-    } else {
-      normalizeVector(v)
-      v.x = (v.x * (length - threshold)) / (1 - threshold)
-      v.y = (v.y * (length - threshold)) / (1 - threshold)
+    this.devices.gamepad.onActivity.addListener(() => {
+      this.activeScheme = "gamepad"
+    })
+
+    this.devices.keyboard.onActivity.addListener(() => {
+      this.activeScheme = "keyboard"
+    })
+  }
+
+  update() {
+    super.update()
+
+    const move = {
+      keyboard: this.devices.keyboard.getVector("KeyA", "KeyD", "KeyS", "KeyW"),
+      gamepad: this.devices.gamepad.getVector(0, 1).invertVertical()
     }
 
-    return v
-  }
-
-export const createGamepadDevice = (index: number) => {
-  const onActivity = new Event()
-
-  const state = {
-    lastTimestamp: undefined as number | undefined,
-    gamepad: navigator.getGamepads()[index]
-  }
-
-  const update = () => {
-    state.gamepad = navigator.getGamepads()[index]
-
-    if (state.lastTimestamp !== state.gamepad?.timestamp) {
-      state.lastTimestamp = state.gamepad?.timestamp
-      onActivity.emit()
+    const aim = {
+      keyboard: this.devices.keyboard.getVector(
+        "ArrowLeft",
+        "ArrowRight",
+        "ArrowDown",
+        "ArrowUp"
+      ),
+      gamepad: this.devices.gamepad.getVector(2, 3).invertVertical()
     }
-  }
 
-  const getButton = (button: number) => state.gamepad?.buttons[button].value
-
-  const getAxis = (axis: number) => state.gamepad?.axes[axis]
-
-  const getVector = (xAxis: number, yAxis: number) =>
-    state.gamepad
-      ? {
-          x: getAxis(xAxis)!,
-          y: -getAxis(yAxis)!
-        }
-      : undefined
-
-  return { state, getButton, getAxis, getVector, update, onActivity }
-}
-
-export const createNormalizedGamepadDevice = (index: number) => {
-  const gamepad = createGamepadDevice(index)
-
-  return {
-    ...gamepad,
-
-    get rightTrigger() {
-      if (!gamepad.state.gamepad) return
-      const state = gamepad.state.gamepad
-
-      if (state.mapping === "standard") {
-        return gamepad.getButton(7)
-      } else if (state.id === "45e-b13-Xbox Wireless Controller") {
-        return gamepad.getButton(16)
-      }
+    const fire = {
+      keyboard: this.devices.keyboard.getKey("Space"),
+      gamepad: this.devices.gamepad.rightTrigger
     }
+
+    this.controls.move.apply(move[this.activeScheme]).deadzone(0.2)
+
+    this.controls.aim.apply(aim[this.activeScheme]).deadzone(0.2)
+
+    this.controls.fire.apply(fire[this.activeScheme])
   }
 }
 
-export const createKeyboardDevice = () => {
-  const onActivity = new Event()
-  const keys = new Set()
-
-  const onKeyDown = (e: KeyboardEvent) => {
-    keys.add(e.code)
-    onActivity.emit()
-  }
-
-  const onKeyUp = (e: KeyboardEvent) => {
-    keys.delete(e.code)
-  }
-
-  window.addEventListener("keydown", onKeyDown)
-  window.addEventListener("keyup", onKeyUp)
-
-  const dispose = () => {
-    window.removeEventListener("keydown", onKeyDown)
-    window.removeEventListener("keyup", onKeyUp)
-  }
-
-  const getKey = (key: string) => (keys.has(key) ? 1 : 0)
-
-  const getAxis = (positive: string, negative: string) =>
-    getKey(positive) - getKey(negative)
-
-  const getVector = (
-    positiveX: string,
-    negativeX: string,
-    positiveY: string,
-    negativeY: string
-  ) => ({
-    x: getAxis(positiveX, negativeX),
-    y: getAxis(positiveY, negativeY)
-  })
-
-  return { dispose, getKey, getAxis, getVector, onActivity }
-}
-
-const createSpaceRageController = () => {
-  let activeScheme: "keyboard" | "gamepad" = "keyboard"
-
-  const devices = {
-    keyboard: createKeyboardDevice(),
-    gamepad: createNormalizedGamepadDevice(0)
-  }
-
-  const controls = {
-    move: { x: 0, y: 0 },
-    aim: { x: 0, y: 0 },
-    fire: 0
-  }
-
-  devices.keyboard.onActivity.addListener(() => {
-    if (activeScheme !== "keyboard") {
-      console.log("Switching to keyboard")
-      activeScheme = "keyboard"
-    }
-  })
-
-  devices.gamepad.onActivity.addListener(() => {
-    if (activeScheme !== "gamepad") {
-      console.log("Switching to gamepad")
-      activeScheme = "gamepad"
-    }
-  })
-
-  const update = () => {
-    devices.gamepad.update()
-
-    switch (activeScheme) {
-      case "keyboard":
-        controls.move = devices.keyboard.getVector(
-          "KeyD",
-          "KeyA",
-          "KeyW",
-          "KeyS"
-        )
-        controls.aim = devices.keyboard.getVector(
-          "ArrowRight",
-          "ArrowLeft",
-          "ArrowUp",
-          "ArrowDown"
-        )
-        controls.fire = devices.keyboard.getKey("Space")
-        break
-
-      case "gamepad":
-        controls.move = devices.gamepad.getVector(0, 1)!
-        controls.aim = devices.gamepad.getVector(2, 3)!
-        controls.fire = devices.gamepad.rightTrigger!
-        break
-    }
-
-    /* Apply some processing */
-    pipe(controls.move, applyDeadzone(0.3))
-    pipe(controls.aim, applyDeadzone(0.3))
-  }
-
-  const dispose = () => {}
-
-  return { controls, update, dispose }
-}
-
-export const controller = createSpaceRageController()
+export const controller = new SpaceRageController()

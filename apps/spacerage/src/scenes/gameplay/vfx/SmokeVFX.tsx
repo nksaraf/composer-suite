@@ -22,7 +22,11 @@ export const SmokeVFX = () => {
   const texture = useAsset.textures.smoke()
 
   return (
-    <InstancedParticles layers-mask={bitmask(Layers.TransparentFX)}>
+    <InstancedParticles
+      name="SmokeVFX"
+      capacity={2000}
+      layers-mask={bitmask(Layers.TransparentFX)}
+    >
       <planeGeometry />
 
       <Composable.MeshStandardMaterial transparent depthWrite={false}>

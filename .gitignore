@@ -28,4 +28,8 @@ apps/website/docs/reference/
 *.sln
 *.sw?
 
+# Turborepo
+.turbo
+
 .scrap
+
