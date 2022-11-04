@@ -1,7 +1,7 @@
 import * as UI from "ui-composer"
 import { IEntity, Query, RegisteredEntity, World } from "miniplex"
 import { useAutoRefresh } from "../lib/useAutoRefresh"
-import { ECS, Entity } from "../scenes/gameplay/state"
+import { ECS, Entity } from "../scenes/world/gameplay/state"
 import { Fragment } from "react"
 import { Object3D, Quaternion, Vector3 } from "three"
 import { RigidBodyApi } from "@react-three/rapier"

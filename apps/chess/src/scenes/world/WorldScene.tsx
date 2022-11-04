@@ -1,23 +1,41 @@
-import { Debug, Physics, RigidBody } from "@react-three/rapier"
+import {
+  Debug,
+  interactionGroups,
+  Physics,
+  RigidBody
+} from "@react-three/rapier"
 import { bitmask, Layers } from "render-composer"
 import { Skybox } from "../../common/Skybox"
 import { Stage } from "../../configuration"
 import { ErrorBoundary } from "react-error-boundary"
 import {
+  Box,
   Capsule,
   OrbitControls,
   PerspectiveCamera,
   Plane,
+  useHelper,
   useTexture
 } from "@react-three/drei"
-import { Player } from "./Player"
-import { SidebarTunnel } from "../../state"
+import { ControlledMovementSystem, Player } from "./Player"
+import { SidebarTunnel, store } from "../../state"
 import {
   MiniplexEntityInspector,
   MiniplexInspector
 } from "../../editor/MiniplexInspector"
-import { ECS } from "../gameplay/state"
-import { PlayerSystem } from "../gameplay/systems/PlayerSystem"
+import { ECS } from "./gameplay/state"
+import { PlayerSystem } from "./gameplay/systems/PlayerSystem"
+import {
+  ActiveCameraSystem,
+  CameraHelperSystem,
+  ThirdPersonCameraSystem
+} from "./systems/ThirdPersonCameraSystem"
+import { Tree } from "../../models/Tree"
+import { Ghost } from "../../models/Ghost"
+import * as AC from "audio-composer"
+import { useCapture } from "../../lib/useCapture"
+import { Tag } from "miniplex"
+import { Adventurer } from "./Adventurer"
 
 export const WorldScene = () => {
   return (
@@ -28,12 +46,11 @@ export const WorldScene = () => {
           colliders={false}
           timeStep="vary"
         >
-          <Debug />
+          {/* <Debug /> */}
           <Skybox />
           <OrbitControls />
-          <PerspectiveCamera position={[20, 20, 20]} makeDefault />
-
-          {/* <FollowCamera /> */}
+          <PlayerCamera />
+          <EditorCamera />
 
           <ambientLight
             intensity={0.1}
@@ -46,31 +63,44 @@ export const WorldScene = () => {
           />
           <axesHelper />
           <Ground />
-          {/*
-
-        <Nebula
-          dimensions={Vec3([50, 50, 15])}
-          amount={80}
-          opacity={0.05}
-          minSize={8}
-          maxSize={30}
-          rotationSpeed={0.1}
-          color={new Color("#fff")}
-        /> */}
           <Player />
-          <SidebarTunnel.In>
-            <MiniplexInspector world={ECS.world} />
-            <PlayerInspector />
-          </SidebarTunnel.In>
-          {/* <Player />
-        <Asteroids initial={100} />
-        <Bullets />
-        <Debris />
-        <Sparks /> */}
-          <PlayerSystem />
+          <ActiveCameraSystem />
+          <ControlledMovementSystem />
+          {/* <PlayerSystem /> */}
+          <ThirdPersonCameraSystem />
+          <CameraHelperSystem />
         </Physics>
       </ErrorBoundary>
     </group>
+  )
+}
+
+function PlayerCamera() {
+  return (
+    <ECS.Entity>
+      <ECS.Component name="camera" data={Tag} />
+      <ECS.Component name="helper" data={Tag} />
+      {/* <ECS.Component name="active" data={Tag} /> */}
+      <ECS.Component name="thirdPerson" data={Tag} />
+      <ECS.Component name="sceneObject">
+        <PerspectiveCamera rotation-y={-0.8}>
+          <AC.AudioListener />
+        </PerspectiveCamera>
+      </ECS.Component>
+    </ECS.Entity>
+  )
+}
+
+function EditorCamera() {
+  return (
+    <ECS.Entity>
+      <ECS.Component name="camera" data={Tag} />
+      {/* <ECS.Component name="helper" data={Tag} /> */}
+      <ECS.Component name="active" data={Tag} />
+      <ECS.Component name="sceneObject">
+        <PerspectiveCamera position={[20, 20, 20]} />
+      </ECS.Component>
+    </ECS.Entity>
   )
 }
 

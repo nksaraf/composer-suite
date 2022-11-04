@@ -41,6 +41,12 @@ export type Entity = {
 
   age?: number
   destroyAfter?: number
+
+  camera?: Tag
+  focus?: Tag
+  thirdPerson?: Tag
+  helper?: Tag
+  active?: Tag
 }
 
 export const ECS = createECS<Entity>()

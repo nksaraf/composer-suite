@@ -9,7 +9,7 @@ import { Sidebar } from "./editor/Sidebar"
 import { useState } from "react"
 
 export const App = () => {
-  const [editorEnabled, setEditorEnabled] = useState(true)
+  const [editorEnabled, setEditorEnabled] = useState(false)
 
   return (
     <StartScreen>

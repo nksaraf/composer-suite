@@ -171,6 +171,7 @@ const createSpaceRageController = () => {
           "KeyW",
           "KeyS"
         )
+
         controls.aim = devices.keyboard.getVector(
           "ArrowRight",
           "ArrowLeft",
@@ -194,7 +195,7 @@ const createSpaceRageController = () => {
 
   const dispose = () => {}
 
-  return { controls, update, dispose }
+  return { controls, update, dispose, devices }
 }
 
 export const controller = createSpaceRageController()

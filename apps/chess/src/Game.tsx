@@ -9,7 +9,6 @@ import { controller } from "./input"
 import { useCapture } from "./lib/useCapture"
 import { GameState, store } from "./state"
 const MenuScene = lazy(() => import("./scenes/menu/MenuScene"))
-const GameplayScene = lazy(() => import("./scenes/gameplay/GameplayScene"))
 const WorldScene = lazy(() => import("./scenes/world/WorldScene"))
 
 const Controller = () => {
@@ -30,24 +29,9 @@ export const Game = () => {
             {/* <AC.Reverb seconds={2} decay={5}> */}
             <PostProcessing />
             <Suspense>
-              <PerspectiveCamera
-                position={[0, 0, 20]}
-                rotation-y={-0.8}
-                makeDefault
-                ref={useCapture(store, "camera")}
-              >
-                <AC.AudioListener />
-              </PerspectiveCamera>
-
               <GameState.Match state="menu">
                 <Suspense>
                   <MenuScene />
-                </Suspense>
-              </GameState.Match>
-
-              <GameState.Match state="gameplay">
-                <Suspense>
-                  <GameplayScene />
                 </Suspense>
               </GameState.Match>
 

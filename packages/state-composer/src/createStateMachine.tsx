@@ -34,6 +34,7 @@ export const createStateMachine = <S extends string>(initialState: S) => {
   return {
     Match,
     enter,
-    is
+    is,
+    get: () => store.state.state
   }
 }

@@ -137,7 +137,7 @@ importers:
       react-dom: 18.2.0_react@18.2.0
       react-error-boundary: 3.1.4_react@18.2.0
       react-merge-refs: 1.1.0
-      render-composer: link:../../packages/render-composer
+      render-composer: 0.2.8_2zczufzgqtpgxqrhmafgcyzcwi
       shader-composer: link:../../packages/shader-composer
       shader-composer-r3f: link:../../packages/shader-composer-r3f
       shader-composer-toybox: link:../../packages/shader-composer-toybox
@@ -2450,6 +2450,22 @@ packages:
     resolution: {integrity: sha512-YUIAQhJdTLctYrhKfefKGpM/qImoeZ/c5DGAlspyVM8yXf2Sraz0+P+Xy7FimvXX5vTp8wipu6SxQ1NJEvdPdQ==}
     peerDependencies:
       react: '>=18.1.0'
+    dependencies:
+      react: 18.2.0
+    dev: false
+
+  /@hmans/use-mutable-list/0.0.2_react@18.2.0:
+    resolution: {integrity: sha512-t9MRWkNUCH2uQJeJuhm31+hsmQyMKYEyUX9Ptud43m2sXMhhB7wBwggeW5KHPZA0ugbE/VKQ7LfASw+ddvDAtg==}
+    peerDependencies:
+      react: ^18.2.0
+    dependencies:
+      react: 18.2.0
+    dev: false
+
+  /@hmans/use-nullable-state/0.0.1_react@18.2.0:
+    resolution: {integrity: sha512-iUuBJtIHEqOnhPj0434fr+ddwi1TSb3Z2EEerjDs1qk9TUQBSEkfrR6wn7mykqjpMtC2ezvMevZ5IntKizsD3Q==}
+    peerDependencies:
+      react: ^18.2.0
     dependencies:
       react: 18.2.0
     dev: false
@@ -7742,6 +7758,29 @@ packages:
       jsesc: 0.5.0
     dev: false
 
+  /render-composer/0.2.8_2zczufzgqtpgxqrhmafgcyzcwi:
+    resolution: {integrity: sha512-MPGIVBjFdobIlVhz5+N6wYMDZF2Z1S0eS58WrhCM7pzCykzsO3rwMCr5l8MOxBygwM46RS5zLj4913VysB+oZQ==}
+    peerDependencies:
+      '@react-three/fiber': '>=8.5.0'
+      postprocessing: '>=6.29.0'
+      react: '>=18.2.0'
+      react-dom: '>=18.2.0'
+      three: '>=0.143.0'
+    dependencies:
+      '@hmans/use-const': 0.0.1_react@18.2.0
+      '@hmans/use-mutable-list': 0.0.2_react@18.2.0
+      '@hmans/use-nullable-state': 0.0.1_react@18.2.0
+      '@react-three/fiber': 8.8.9_ee34sidbpuk5ebd4phepfgxxdi
+      fp-ts: 2.12.3
+      postprocessing: 6.28.7_three@0.145.0
+      react: 18.2.0
+      react-dom: 18.2.0_react@18.2.0
+      shader-composer: 0.4.7_three@0.145.0
+      shader-composer-postprocessing: 0.0.1_6pxw55fp4fqitoi6cpzkzjy4ei
+      test: 3.2.1
+      three: 0.145.0
+    dev: false
+
   /require-directory/2.1.1:
     resolution: {integrity: sha512-fGxEI7+wsG9xrvdjsrlmL22OMTTiHRwAMroiEeMgq8gzoLC/PQr7RsRDSTLUg/bZAZtF+TVIkHc6/4RIKrui+Q==}
     engines: {node: '>=0.10.0'}
@@ -7895,6 +7934,27 @@ packages:
       is-extendable: 0.1.1
       is-plain-object: 2.0.4
       split-string: 3.1.0
+    dev: false
+
+  /shader-composer-postprocessing/0.0.1_6pxw55fp4fqitoi6cpzkzjy4ei:
+    resolution: {integrity: sha512-GjyqIoKUmQgLk+vvBjLx72mAjtC1D3/RpBp4Am6EHZ7TwGQ3JZH/o+oHHQtkzbJhtrHMS/cLDPVeAk6rgA3CCg==}
+    peerDependencies:
+      postprocessing: ^6.28.7
+      shader-composer: ^0.4.3
+      three: '>=0.141.0'
+    dependencies:
+      postprocessing: 6.28.7_three@0.145.0
+      shader-composer: 0.4.7_three@0.145.0
+      three: 0.145.0
+    dev: false
+
+  /shader-composer/0.4.7_three@0.145.0:
+    resolution: {integrity: sha512-urjKmEepbQCzjiaxO4eIVhxnI25NnGk68nvVbMWWbv8YqYZ/LN44k2Ewte2sn51jZZ5MGQ0T4ktjA9tZVErUyQ==}
+    peerDependencies:
+      three: '>=0.141.0'
+    dependencies:
+      fp-ts: 2.12.3
+      three: 0.145.0
     dev: false
 
   /shebang-command/1.2.0:
