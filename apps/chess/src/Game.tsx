@@ -21,7 +21,7 @@ const Controller = () => {
 
 export const Game = () => {
   return (
-    <RC.Canvas dpr={1}>
+    <RC.Canvas dpr={1} shadows={true}>
       <Controller />
       <RC.RenderPipeline updatePriority={Stage.Render}>
         <AC.AudioContext>

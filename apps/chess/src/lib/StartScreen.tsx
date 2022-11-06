@@ -7,7 +7,7 @@ export type StartScreenProps = {
 }
 
 export const StartScreen = ({ children }: StartScreenProps) => {
-  const [started, setStarted] = React.useState(false)
+  const [started, setStarted] = React.useState(true)
 
   if (started) {
     return <>{children}</>

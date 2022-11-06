@@ -1,7 +1,8 @@
 import { useHelper } from "@react-three/drei"
 import { useFrame, useThree } from "@react-three/fiber"
+import { useEntities } from "miniplex/react"
 import { useEffect, useLayoutEffect } from "react"
-import { CameraHelper, Quaternion, Vector3 } from "three"
+import { CameraHelper, PerspectiveCamera, Quaternion, Vector3 } from "three"
 import { Stage } from "../../../configuration"
 import { controller } from "../../../input"
 import { ECS } from "../gameplay/state"
@@ -12,11 +13,12 @@ const idealLookAt = new Vector3()
 const tmpTarget = new Vector3()
 const tmpLookAt = new Vector3()
 
+const players = ECS.world.with("player", "sceneObject", "velocity")
+const cameras = ECS.world.with("camera", "sceneObject", "thirdPerson")
 export const ThirdPersonCameraSystem = () => {
-  const [player] = ECS.useArchetype("player", "sceneObject", "focus")
-  const [camera] = ECS.useArchetype("camera", "thirdPerson", "sceneObject")
-
   useFrame((_, dt) => {
+    let [player] = players
+    let [camera] = cameras
     // console.log(player, camera)
     if (camera && player) {
       // based on code from https://github.com/simondevyoutube/ThreeJS_Tutorial_ThirdPersonCamera/blob/main/main.js
@@ -42,8 +44,9 @@ export const ThirdPersonCameraSystem = () => {
   return null
 }
 
+const activeCameras = ECS.world.with("camera", "sceneObject", "active")
 export const ActiveCameraSystem = () => {
-  const [camera] = ECS.useArchetype("camera", "active", "sceneObject")
+  const [camera] = useEntities(activeCameras)
   const set = useThree(({ set }) => set)
   const activeCamera = useThree(({ camera }) => camera)
 
@@ -54,13 +57,11 @@ export const ActiveCameraSystem = () => {
     })
   }, [])
 
-  console.log(camera)
-
   useLayoutEffect(() => {
     console.log("setting active camera", camera)
     if (camera) {
       const oldCam = activeCamera
-      set(() => ({ camera: camera?.sceneObject }))
+      set(() => ({ camera: camera?.sceneObject as PerspectiveCamera }))
       return () => set(() => ({ camera: oldCam }))
     }
     // The camera should not be part of the dependency list because this components camera is a stable reference
@@ -69,9 +70,9 @@ export const ActiveCameraSystem = () => {
   return null
 }
 
+const cameraWithHelpers = ECS.world.with("camera", "sceneObject", "helper")
 export const CameraHelperSystem = () => {
-  const cameras = ECS.useArchetype("camera", "helper", "sceneObject")
-
+  const cameras = useEntities(cameraWithHelpers)
   return (
     <>
       {cameras.entities.map((e) => {
@@ -81,7 +82,11 @@ export const CameraHelperSystem = () => {
   )
 }
 
-function CameraHelperC({ camera }) {
+function CameraHelperC({
+  camera
+}: {
+  camera: typeof cameraWithHelpers.entities[0]
+}) {
   useHelper({ current: camera?.sceneObject }, CameraHelper)
   return null
 }
