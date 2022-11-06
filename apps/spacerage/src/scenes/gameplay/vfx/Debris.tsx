@@ -1,8 +1,9 @@
 import { Composable, Modules } from "material-composer-r3f"
+import { tagged } from "miniplex"
 import { between, upTo } from "randomish"
 import { memo } from "react"
 import { Mul, OneMinus, ScaleAndOffset, Vec3 } from "shader-composer"
-import { Vector3 } from "three"
+import { Quaternion, Vector3 } from "three"
 import { createParticleLifetime } from "vfx-composer"
 import { Emitter, EmitterProps, InstancedParticles } from "vfx-composer-r3f"
 import { InstanceRNG } from "../../../lib/InstanceRNG"
@@ -36,9 +37,9 @@ export const Debris = () => {
       <icosahedronGeometry args={[0.3]} />
       <DebrisMaterial />
 
-      <ECS.ArchetypeEntities archetype="debris">
-        {({ debris }) => debris}
-      </ECS.ArchetypeEntities>
+      <ECS.Entities in={tagged("isDebris")}>
+        {(entity) => entity.jsx}
+      </ECS.Entities>
     </InstancedParticles>
   )
 }
@@ -55,3 +56,12 @@ export const DebrisEmitter = (props: EmitterProps) => (
     }}
   />
 )
+
+export const spawnDebris = (position: Vector3, quaternion: Quaternion) =>
+  ECS.world.add({
+    isDebris: true,
+    age: 0,
+    destroyAfter: 3,
+
+    jsx: <DebrisEmitter position={position} quaternion={quaternion} />
+  })

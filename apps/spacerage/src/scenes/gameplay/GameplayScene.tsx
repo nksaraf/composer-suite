@@ -1,26 +1,19 @@
-import { PerspectiveCamera, Text } from "@react-three/drei"
 import { Physics } from "@react-three/rapier"
-import { Composable, Modules } from "material-composer-r3f"
 import { Suspense } from "react"
-import * as RC from "render-composer"
 import { bitmask, Layers } from "render-composer"
-import { GlobalTime, Vec3 } from "shader-composer"
+import { Vec3 } from "shader-composer"
 import { Color } from "three"
 import { Skybox } from "../../common/Skybox"
 import { Stage } from "../../configuration"
-import {
-  MiniplexEntityInspector,
-  MiniplexInspector
-} from "../../editor/MiniplexInspector"
-import { ScenePass } from "../../lib/ScenePass"
 import { SidebarTunnel } from "../../state"
 import { Nebula } from "../menu/vfx/Nebula"
 import { Asteroids } from "./Asteroids"
 import { Bullets } from "./Bullets"
 import { FollowCamera } from "./FollowCamera"
+import { HUD } from "./HUD"
 import { Pickups } from "./Pickups"
 import { Player } from "./Player"
-import { ECS } from "./state"
+import { PostProcessing } from "./PostProcessing"
 import { AgeSystem } from "./systems/AgeSystem"
 import { AttractorSystem } from "./systems/AttractorSystem"
 import { BulletSystem } from "./systems/BulletSystem"
@@ -38,6 +31,8 @@ import { Sparks } from "./vfx/Sparks"
 const GameplayScene = () => {
   return (
     <Suspense>
+      <PostProcessing />
+
       <fog attach="fog" args={["#000000", 30, 300]} />
       <group>
         <Physics
@@ -82,10 +77,7 @@ const GameplayScene = () => {
           <AsteroidExplosions />
           <BackgroundAsteroids />
 
-          <SidebarTunnel.In>
-            <MiniplexInspector world={ECS.world} />
-            <PlayerInspector />
-          </SidebarTunnel.In>
+          <SidebarTunnel.In>{/* Extra inspectors */}</SidebarTunnel.In>
 
           <AgeSystem />
           <DestroyAfterSystem />
@@ -100,42 +92,6 @@ const GameplayScene = () => {
       <HUD />
     </Suspense>
   )
-}
-
-const HUD = () => {
-  return (
-    <>
-      <ScenePass>
-        <PerspectiveCamera position={[0, 0, 20]} makeDefault />
-
-        <Text
-          color={new Color("hotpink").multiplyScalar(10)}
-          fontSize={2}
-          position={[-3, 7, 0]}
-          rotation={[0, 0.8, 0.3]}
-        >
-          723.389.150
-          <Composable.meshBasicMaterial
-            attach="material"
-            color={new Color("hotpink").multiplyScalar(3)}
-            depthTest={false}
-          >
-            <Modules.SurfaceWobble offset={GlobalTime} amplitude={0.2} />
-          </Composable.meshBasicMaterial>
-        </Text>
-      </ScenePass>
-
-      <RC.EffectPass>
-        <RC.SelectiveBloomEffect intensity={4} luminanceThreshold={1} />
-      </RC.EffectPass>
-    </>
-  )
-}
-
-const PlayerInspector = () => {
-  const [player] = ECS.useArchetype("player")
-
-  return player ? <MiniplexEntityInspector entity={player} /> : null
 }
 
 export default GameplayScene

@@ -1,5 +1,5 @@
 {
-  "name": "ts-module-docs",
+  "name": "@hmans/event",
   "author": {
     "name": "Hendrik Mans",
     "email": "hendrik@mans.de",
@@ -7,8 +7,8 @@
   },
   "description": "",
   "version": "0.0.1",
-  "main": "dist/ts-module-docs.cjs.js",
-  "module": "dist/ts-module-docs.esm.js",
+  "main": "dist/hmans-event.cjs.js",
+  "module": "dist/hmans-event.esm.js",
   "files": [
     "dist/**",
     "LICENSE",
@@ -17,13 +17,11 @@
   "license": "MIT",
   "sideEffects": false,
   "scripts": {
-    "build": "preconstruct build",
-    "test": "jest"
+    "build": "preconstruct build"
   },
   "babel": {
     "presets": [
       "@babel/preset-env",
-      "@babel/preset-react",
       [
         "@babel/preset-typescript",
         {
@@ -32,9 +30,5 @@
         }
       ]
     ]
-  },
-  "dependencies": {
-    "@microsoft/tsdoc": "^0.14.2",
-    "ts-morph": "^16.0.0"
   }
 }

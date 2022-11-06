@@ -1,6 +1,7 @@
 import { GroupProps, useLoader } from "@react-three/fiber"
 import { PositionalAudio } from "audio-composer"
 import { Composable, Modules } from "material-composer-r3f"
+import { tagged } from "miniplex"
 import { between } from "randomish"
 import { Mul, ScaleAndOffset, Smoothstep, Vec3 } from "shader-composer"
 import { AudioLoader } from "three"
@@ -41,9 +42,9 @@ export const AsteroidExplosions = () => {
         <Modules.Lifetime {...lifetime} />
       </Composable.MeshBasicMaterial>
 
-      <ECS.ArchetypeEntities archetype="asteroidExplosion">
-        {(entity) => entity.asteroidExplosion}
-      </ECS.ArchetypeEntities>
+      <ECS.Entities in={tagged("isAsteroidExplosion")}>
+        {(entity) => entity.jsx}
+      </ECS.Entities>
     </InstancedParticles>
   )
 }
@@ -68,10 +69,11 @@ export const AsteroidExplosion = (props: GroupProps) => (
 )
 
 export const spawnAsteroidExplosion = (props: GroupProps) =>
-  ECS.world.createEntity({
+  ECS.world.add({
+    isAsteroidExplosion: true,
     age: 0,
     destroyAfter: 5,
-    asteroidExplosion: <AsteroidExplosion {...props} />
+    jsx: <AsteroidExplosion {...props} />
   })
 
 useLoader.preload(AudioLoader, "/sounds/explosion.wav")
