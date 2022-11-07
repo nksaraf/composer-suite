@@ -142,7 +142,7 @@ instancedGeometry.attributes.normal = grassBaseGeometry.attributes.normal
 // Each instance has its own data for position, orientation and scale
 var indices = []
 var offsets = []
-var scales = []
+var size = []
 var halfRootAngles = []
 
 //For each instance of the grass blade
@@ -161,15 +161,15 @@ for (let i = 0; i < instances; i++) {
 
   //Define variety in height
   if (i % 3 != 0) {
-    scales.push(2.0 + Math.random() * 1.25)
+    size.push(2.0 + Math.random() * 1.25)
   } else {
-    scales.push(2.0 + Math.random())
+    size.push(2.0 + Math.random())
   }
 }
 console.log(offsets)
 
 var offsetAttribute = new InstancedBufferAttribute(new Float32Array(offsets), 3)
-var scaleAttribute = new InstancedBufferAttribute(new Float32Array(scales), 1)
+var sizeAttribute = new InstancedBufferAttribute(new Float32Array(size), 1)
 var halfRootAngleAttribute = new InstancedBufferAttribute(
   new Float32Array(halfRootAngles),
   2
@@ -177,7 +177,7 @@ var halfRootAngleAttribute = new InstancedBufferAttribute(
 var indexAttribute = new InstancedBufferAttribute(new Float32Array(indices), 1)
 
 instancedGeometry.setAttribute("offset", offsetAttribute)
-instancedGeometry.setAttribute("scale", scaleAttribute)
+instancedGeometry.setAttribute("size", sizeAttribute)
 instancedGeometry.setAttribute("halfRootAngle", halfRootAngleAttribute)
 instancedGeometry.setAttribute("index", indexAttribute)
 
@@ -199,15 +199,18 @@ var grassVertexSource = /*glsl*/ `
   attribute vec3 offset;
   attribute vec2 uv;
   attribute vec2 halfRootAngle;
-  attribute float scale;
+  attribute float size;
   attribute float index;
   uniform float time;
-  
+
+  uniform float scale;
   uniform float delta;
   uniform float posX;
   uniform float posZ;
   uniform float width;
-  
+  uniform float offsetX;
+  uniform float offsetY;
+
   uniform mat4 modelViewMatrix;
   uniform mat4 projectionMatrix;
   
@@ -231,11 +234,11 @@ var grassVertexSource = /*glsl*/ `
     frc = position.y / float(${bladeHeight});  
     //Scale vertices
     vec3 vPosition = position;
-    vPosition.y *= scale;
+    vPosition.y *= size;
   
     //Invert scaling for normals
     vNormal = normal;
-    vNormal.y /= scale;
+    vNormal.y /= size;
   
     //Rotate blade around Y axis
     vec4 direction = vec4(0.0, halfRootAngle.x, 0.0, halfRootAngle.y);
@@ -276,7 +279,7 @@ var grassVertexSource = /*glsl*/ `
     vNormal = rotateVectorByQuaternion(vNormal, direction);
   
 
-    vec2 texturePosition = (vec2(pos.x+delta*posX, pos.y+delta*posZ) - width / 2.0) / (width * 2.0);
+    vec2 texturePosition = (vec2(pos.x+delta*posX, pos.y+delta*posZ) - vec2(offsetX, offsetY)) / (width * scale);
     vec4 cord = texture2D(noiseTexture, texturePosition);
     float y = ((2.0 * cord.r) - 1.0) * 50.0;
 
@@ -428,46 +431,50 @@ var grassFragmentSource = /*glsl*/ `
 //   side: DoubleSide
 // })
 
-export const Grass = forwardRef<Mesh, { noiseTexture: Texture }>(
-  ({ noiseTexture, ...props }, ref) => {
-    return (
-      <mesh
-        ref={ref}
-        {...props}
-        frustumCulled={false}
-        geometry={instancedGeometry}
-      >
-        <rawShaderMaterial
-          uniforms={{
-            time: { value: 0 },
-            delta: { value: delta },
-            posX: { value: pos.x },
-            posZ: { value: pos.y },
-            width: { value: width },
-            map: { value: grassTexture },
-            alphaMap: { value: alphaMap },
-            noiseTexture: { value: noiseTexture },
-            sunDirection: {
-              value: new Vector3(
-                Math.sin(azimuth),
-                Math.sin(elevation),
-                -Math.cos(azimuth)
-              )
-            },
-            cameraPosition: { value: new Vector3(0, 0, 0) },
-            ambientStrength: { value: ambientStrength },
-            translucencyStrength: { value: translucencyStrength },
-            diffuseStrength: { value: diffuseStrength },
-            specularStrength: { value: specularStrength },
-            shininess: { value: shininess },
-            lightColour: { value: sunColour },
-            specularColour: { value: specularColour }
-          }}
-          vertexShader={grassVertexSource}
-          fragmentShader={grassFragmentSource}
-          side={DoubleSide}
-        />
-      </mesh>
-    )
-  }
-)
+export const Grass = forwardRef<
+  Mesh,
+  { scale: number; offset: [number, number]; noiseTexture: Texture }
+>(({ noiseTexture, scale = 1.0, offset = [0, 0], ...props }, ref) => {
+  return (
+    <mesh
+      ref={ref}
+      {...props}
+      frustumCulled={false}
+      geometry={instancedGeometry}
+    >
+      <rawShaderMaterial
+        uniforms={{
+          time: { value: 0 },
+          delta: { value: delta },
+          posX: { value: pos.x },
+          posZ: { value: pos.y },
+          offsetX: { value: offset[0] },
+          offsetY: { value: offset[1] },
+          width: { value: width },
+          map: { value: grassTexture },
+          alphaMap: { value: alphaMap },
+          noiseTexture: { value: noiseTexture },
+          sunDirection: {
+            value: new Vector3(
+              Math.sin(azimuth),
+              Math.sin(elevation),
+              -Math.cos(azimuth)
+            )
+          },
+          cameraPosition: { value: new Vector3(0, 0, 0) },
+          ambientStrength: { value: ambientStrength },
+          translucencyStrength: { value: translucencyStrength },
+          diffuseStrength: { value: diffuseStrength },
+          specularStrength: { value: specularStrength },
+          shininess: { value: shininess },
+          lightColour: { value: sunColour },
+          specularColour: { value: specularColour },
+          scale: { value: scale }
+        }}
+        vertexShader={grassVertexSource}
+        fragmentShader={grassFragmentSource}
+        side={DoubleSide}
+      />
+    </mesh>
+  )
+})

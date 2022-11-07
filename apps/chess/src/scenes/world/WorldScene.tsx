@@ -186,9 +186,19 @@ function GrassSystem() {
 
   const { scale } = useControls({
     scale: {
-      value: 2,
+      value: 4.0,
       onChange(v) {
         groundRef.current.material.uniforms.scale.value = v
+        ref.current.material.uniforms.scale.value = v
+      }
+    },
+    offset: {
+      value: [width / 2, width / 2],
+      onChange(v) {
+        groundRef.current.material.uniforms.offsetX.value = v[0]
+        groundRef.current.material.uniforms.offsetY.value = v[1]
+        ref.current.material.uniforms.offsetX.value = v[0]
+        ref.current.material.uniforms.offsetY.value = v[1]
       }
     }
   })
@@ -198,7 +208,12 @@ function GrassSystem() {
 
   return (
     <>
-      <Grass ref={ref} noiseTexture={noiseTexture} visible={grass} />
+      <Grass
+        ref={ref}
+        noiseTexture={noiseTexture}
+        visible={grass}
+        scale={scale}
+      />
       {/* <Ground noiseTexture={noiseTexture} ref={groundRef} /> */}
       <mesh ref={groundRef} geometry={memo}>
         <GroundMaterial noiseTexture={noiseTexture} scale={scale} />
@@ -209,6 +224,7 @@ function GrassSystem() {
 
 export function useNoiseTexture() {
   let noiseTexture = useTexture(
+    // "/noise.jpg"
     "https://al-ro.github.io/images/grass/perlinFbm.jpg"
   )
 

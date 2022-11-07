@@ -1,4 +1,5 @@
 import { useFrame } from "@react-three/fiber"
+import { useControls } from "leva"
 import { useLayoutEffect, useRef } from "react"
 import { forwardRef } from "react"
 import {
@@ -197,15 +198,31 @@ export function createGround(noiseTexture: Texture) {
 //     </mesh>
 //   )
 // })
-export function GroundMaterial({ noiseTexture, scale = 1.0 }) {
+export function GroundMaterial({ noiseTexture, offset = [0, 0], scale = 1.0 }) {
+  let ref = useRef()
+  const controls = useControls({
+    elevate: {
+      value: true,
+      onChange: (value) => {
+        if (ref.current) {
+          ref.current.uniforms.elevate = value
+        }
+      }
+    }
+  })
+
   return (
     <rawShaderMaterial
+      ref={ref}
       uniforms={{
         noiseTexture: { value: noiseTexture },
         posX: { value: pos.x },
         posZ: { value: pos.y },
         width: { value: width },
-        scale: { value: scale }
+        scale: { value: scale },
+        elevate: { value: controls.elevate },
+        offsetX: { value: offset[0] },
+        offsetY: { value: offset[1] }
       }}
       vertexShader={
         /* glsl */ `
@@ -214,9 +231,13 @@ export function GroundMaterial({ noiseTexture, scale = 1.0 }) {
         uniform mat4 modelMatrix;
         uniform float posZ;
         uniform float posX;
+        uniform float offsetX;
+        uniform float offsetY;
+
         uniform sampler2D noiseTexture;
         uniform highp float width;
         uniform highp float scale;
+        uniform bool elevate;
     
         attribute vec3 position;
     
@@ -227,10 +248,11 @@ export function GroundMaterial({ noiseTexture, scale = 1.0 }) {
           pos.x = posX;
           pos.z = posZ;
           pos.y = 0.0;
-          vec2 texturePosition = (pos.xz + position.xz - width / 2.0) / (width * scale);
+          
+          vec2 texturePosition = (pos.xz + position.xz - vec2(offsetX, offsetY)) / (width * scale);
           cord = texture2D(noiseTexture, texturePosition);
           vec3 vPos = position.xyz;
-          // vPos.y = ((2.0 * cord.r) - 1.0) * 50.0;
+          vPos.y = ((2.0 * cord.r) - 1.0) * 50.0;
           gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(vPos, 1.0);
         }
       `

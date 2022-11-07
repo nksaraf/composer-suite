@@ -23,7 +23,8 @@ import {
   Quaternion,
   RepeatWrapping,
   Vector2,
-  Vector3
+  Vector3,
+  Vector3Tuple
 } from "three"
 import { Cow } from "../../models/Cow"
 import { Adventurer } from "./Adventurer"
@@ -49,59 +50,62 @@ import { resolution, width } from "./grass"
 import { lerp } from "three/src/math/MathUtils"
 var tempVec = new Vector2()
 
-function sample(data, x, y, wrappingS, wrappingT) {
-  // Checks the texture wrapping and modifies the x and y accordingly
-  // this.clampCoords( x, y, wrappingS, wrappingT, tempVec );
+function texture2D(data: ImageData, x: number, y: number) {
+  // remove floating part since we are sampling one pixel
+  x = Math.round(x * data.width)
+  y = Math.round(y * data.width)
 
-  // Convert the normalized units into pixel coords
-  // console.log(x, y, data.width, data.height)
-  x = Math.floor(x * data.width)
-  y = Math.floor(y * data.height)
+  // we have both positive and negative values
+  let textureX = Math.abs(x) % data.width
+  let textureY = Math.abs(y) % data.width
 
-  // if (x >= data.width) x = data.width - 1
-  // if (y >= data.height) y = data.height - 1
-  // if (x < 0) x = 0
-  // if (y < 0) y = 0
-  x = Math.abs(x % data.width)
-  y = Math.abs(y % data.height)
-  var val = data.data[(data.width * y + (512 - x)) * 4]
-  console.log(x, y, val)
-  // console.log(val)
+  // wrap properly like THREE.RepeatWrapping
+  if (x < 0) x = data.width - 1 - textureX
+  else x = textureX
 
-  return val / 255.0
+  // wrap properly and handle the inversion of the y axis
+  if (y < 0) y = textureY
+  else y = data.width - 1 - textureY
+
+  // pixel index in the flattened data array
+  let pixel = data.width * y + x
+
+  return [
+    data.data[pixel * 4],
+    data.data[pixel * 4 + 1],
+    data.data[pixel * 4 + 2]
+  ]
 }
 
 const zeroArray = new Array(16).fill(0)
 export function ControlledMovementSystem() {
   const { acceleration: accZ } = useControls({
-    acceleration: { value: 50, step: 10 }
+    acceleration: { value: 500, step: 10 }
+  })
+
+  const { scale, offset } = useControls({
+    scale: 4.0,
+    offset: [width / 2, width / 2]
   })
 
   const texture = useNoiseTexture()
 
-  let ref = useRef()
   const memo = useMemo(() => {
     let el = document.createElement("canvas")
-    el.style.position = "fixed"
-    el.style.top = "0px"
     el.height = 512
     el.width = 512
     let ctx = el.getContext("2d")
     console.log(texture.source.data.width)
     ctx?.drawImage(texture.source.data, 0, 0, 512, 512, 0, 0, 512, 512)
     // document.body.appendChild(el)
-    return ctx?.getImageData(0, 0, 512, 512)
+    return ctx?.getImageData(0, 0, 512, 512)!
   }, [texture])
-
-  console.log(memo)
 
   useFrame((_, dt) => {
     let [player] = players
     if (!player) return
     const velocity = player.velocity
     const { move, aim } = controller.controls
-
-    console.log()
 
     acceleration.z = accZ
 
@@ -166,51 +170,20 @@ export function ControlledMovementSystem() {
     controlObject.position.add(forward)
     controlObject.position.add(sideways)
 
-    velocity
-
     oldPosition.copy(controlObject.position)
 
-    const scale = 2
     controlObject.position.y = lerp(
       controlObject.position.y,
       getYPosition(
         memo,
         controlObject.position.x,
         controlObject.position.z,
-        scale
+        scale,
+        offset
       ),
       dt * 5
     )
   })
-
-  const mem = useMemo(() => {
-    const geom = new PlaneGeometry(width, width, resolution, resolution)
-    geom.lookAt(new Vector3(0, 1, 0))
-    geom.computeVertexNormals()
-
-    const color = new Color()
-    const colors = []
-    const count = geom.attributes.position.count
-
-    for (let index = 0; index < count; index++) {
-      const x = geom.attributes.position.array[index * 3]
-      const y = geom.attributes.position.array[index * 3 + 2]
-
-      // color.setHSL((t - 512) / 512, 1.0, 0.5)
-
-      const color = sample(
-        memo,
-        (x - width / 2) / (width * 2.0),
-        (y - width / 2) / (width * 2.0),
-        RepeatWrapping,
-        RepeatWrapping
-      )
-      console.log(color)
-      colors.push(color, 0, 0)
-    }
-    geom.setAttribute("color", new Float32BufferAttribute(colors, 3))
-    return geom
-  }, [memo])
 
   return (
     <>
@@ -223,9 +196,43 @@ export function ControlledMovementSystem() {
           </mesh>
         ))
       )} */}
-      <mesh position={[0, 0, 512]} geometry={mem}>
-        <meshBasicMaterial vertexColors />
-      </mesh>
+      <NoisePlane
+        scale={scale}
+        imageData={memo}
+        offset={offset}
+        position={[512, 0, 512]}
+      />
+      <NoisePlane
+        scale={scale}
+        imageData={memo}
+        offset={offset}
+        position={[0, 0, 0]}
+      />
+      <NoisePlane
+        scale={scale}
+        imageData={memo}
+        offset={offset}
+        position={[-512, 0, -512]}
+      />
+      <NoisePlane
+        scale={scale}
+        imageData={memo}
+        offset={offset}
+        position={[0, 0, 512]}
+      />
+
+      <NoisePlane
+        scale={scale}
+        imageData={memo}
+        offset={offset}
+        position={[-512, 0, 0]}
+      />
+      <NoisePlane
+        scale={scale}
+        imageData={memo}
+        offset={offset}
+        position={[-512, 0, 512]}
+      />
 
       {/* <mesh position={[10, getYPosition(memo, 10, 10, 2.0), 10]}>
         <boxGeometry />
@@ -312,23 +319,67 @@ export const Player = () => {
     </>
   )
 }
+function NoisePlane({
+  position,
+  imageData,
+  scale,
+  offset
+}: {
+  position: Vector3Tuple
+  imageData: ImageData
+  scale: number
+  offset: [number, number]
+}) {
+  const plane = useMemo(() => {
+    const geom = new PlaneGeometry(width, width, resolution, resolution)
+    geom.lookAt(new Vector3(0, 1, 0))
+    geom.computeVertexNormals()
+
+    const color = new Color()
+    const colors = []
+    const count = geom.attributes.position.count
+
+    for (let index = 0; index < count; index++) {
+      const x = geom.attributes.position.array[index * 3]
+      const y = geom.attributes.position.array[index * 3 + 2]
+
+      // color.setHSL((t - 512) / 512, 1.0, 0.5)
+
+      const color = texture2D(
+        imageData,
+        (x - offset[0] + position[0]) / (width * scale),
+        (y - offset[1] + position[2]) / (width * scale)
+      )
+      colors.push(color[0] / 255.0, color[1] / 255.0, color[2] / 255.0)
+    }
+    geom.setAttribute("color", new Float32BufferAttribute(colors, 3))
+    return geom
+  }, [imageData, position])
+
+  return (
+    <mesh position={position} geometry={plane}>
+      <meshBasicMaterial vertexColors />
+    </mesh>
+  )
+}
+
 function getYPosition(
-  memo: ImageData | undefined,
+  memo: ImageData,
   x: number,
   y: number,
-  scale: number
+  scale: number,
+  offset = [0, 0]
 ): number {
   let width = 512
   let height =
     50.0 *
     (2.0 *
-      sample(
+      (texture2D(
         memo,
-        (x - width / 2) / (width * 2.0),
-        (y - width / 2) / (width * 2.0),
-        RepeatWrapping,
-        RepeatWrapping
-      ) -
+        (x - offset[0]) / (width * scale),
+        (y - offset[1]) / (width * scale)
+      )[0] /
+        255.0) -
       1.0)
 
   return height
