@@ -25,12 +25,10 @@ type GLTFResult = GLTF & {
 }
 
 export function Tree(props: JSX.IntrinsicElements["group"]) {
-  const { nodes, materials } = useGLTF(
-    "/models/adventurers_rest.glb"
-  ) as GLTFResult
+  const { geometry, material } = useTreeModel()
   return (
     <group {...props} dispose={null}>
-      <group
+      {/* <group
         userData={{ name: "root" }}
         scale={0.5}
         rotation={[-Math.PI / 2, 0, 0]}
@@ -38,18 +36,25 @@ export function Tree(props: JSX.IntrinsicElements["group"]) {
         <group
           rotation={[Math.PI / 2, 0, 0]}
           userData={{ name: "GLTF_SceneRootNode" }}
-        >
-          <mesh
-            castShadow
-            receiveShadow
-            geometry={nodes.Object_8.geometry}
-            material={materials.arvere}
-            userData={{ name: "Object_8" }}
-            position={[-0.44, 0, -4.58]}
-            rotation={[0, 0.68, 0]}
-          />
-        </group>
-      </group>
+        > */}
+      <mesh
+        castShadow
+        receiveShadow
+        geometry={geometry}
+        material={material}
+        // rotation={[0, 0.68, 0]}
+      />
+      {/* </group>
+      </group> */}
     </group>
   )
+}
+export function useTreeModel(): { nodes: any; materials: any } {
+  const { nodes, materials } = useGLTF(
+    "/models/adventurers_rest.glb"
+  ) as unknown as GLTFResult
+  return {
+    geometry: nodes.Object_8.geometry,
+    material: materials.arvere
+  }
 }

@@ -1,5 +1,6 @@
 import { PerspectiveCamera } from "@react-three/drei"
 import { useFrame } from "@react-three/fiber"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import * as AC from "audio-composer"
 import { lazy, Suspense } from "react"
 import * as RC from "render-composer"
@@ -19,33 +20,37 @@ const Controller = () => {
   return null
 }
 
+const client = new QueryClient()
+
 export const Game = () => {
   return (
     <RC.Canvas dpr={1} shadows={true}>
       <Controller />
       <RC.RenderPipeline updatePriority={Stage.Render}>
-        <AC.AudioContext>
-          <AC.Compressor>
-            {/* <AC.Reverb seconds={2} decay={5}> */}
-            <PostProcessing />
-            <Suspense>
-              <GameState.Match state="menu">
-                <Suspense>
-                  <MenuScene />
-                </Suspense>
-              </GameState.Match>
+        <QueryClientProvider client={client}>
+          <AC.AudioContext>
+            <AC.Compressor>
+              {/* <AC.Reverb seconds={2} decay={5}> */}
+              <PostProcessing />
+              <Suspense>
+                <GameState.Match state="menu">
+                  <Suspense>
+                    <MenuScene />
+                  </Suspense>
+                </GameState.Match>
 
-              <GameState.Match state="world">
-                <Suspense>
-                  <WorldScene />
-                </Suspense>
-              </GameState.Match>
+                <GameState.Match state="world">
+                  <Suspense>
+                    <WorldScene />
+                  </Suspense>
+                </GameState.Match>
 
-              {/* <Perf matrixUpdate /> */}
-            </Suspense>
-            {/* </AC.Reverb> */}
-          </AC.Compressor>
-        </AC.AudioContext>
+                {/* <Perf matrixUpdate /> */}
+              </Suspense>
+              {/* </AC.Reverb> */}
+            </AC.Compressor>
+          </AC.AudioContext>
+        </QueryClientProvider>
       </RC.RenderPipeline>
     </RC.Canvas>
   )

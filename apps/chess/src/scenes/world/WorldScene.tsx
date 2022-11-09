@@ -20,7 +20,6 @@ import {
   useTexture
 } from "@react-three/drei"
 import { Grass, resolution, width } from "./grass"
-import { createGround, Ground, GroundMaterial } from "./createGround"
 
 import { useControls } from "leva"
 import { ControlledMovementSystem, Player } from "./Player"
@@ -35,25 +34,31 @@ import {
   CameraHelperSystem,
   ThirdPersonCameraSystem
 } from "./systems/ThirdPersonCameraSystem"
-import { Tree } from "../../models/Tree"
+import { Tree, useTreeModel } from "../../models/Tree"
 import { Ghost } from "../../models/Ghost"
 import * as AC from "audio-composer"
 import { useCapture } from "../../lib/useCapture"
 import { Adventurer } from "./Adventurer"
 import { useFrame } from "@react-three/fiber"
-import { useEffect as useLayoutEffect, useMemo, useRef } from "react"
+import { useEffect, useEffect as useLayoutEffect, useMemo, useRef } from "react"
 import {
   CameraHelper,
   DirectionalLight,
+  InstancedBufferGeometry,
+  InstancedMesh,
   Mesh,
+  Object3D,
   PlaneGeometry,
+  RawShaderMaterial,
   RepeatWrapping,
   Vector3
 } from "three"
 import { useState } from "react"
+import { GroundMaterial } from "./GroundMaterial"
+import { getYPosition, useHeightmap } from "./useHeightmap"
 
 export const WorldScene = () => {
-  const ref = useRef()
+  const ref = useRef<DirectionalLight>(null)
 
   // useHelper(
   //   {
@@ -81,7 +86,6 @@ export const WorldScene = () => {
           <OrbitControls />
           <PlayerCamera />
           <EditorCamera />
-          {/* <Tree /> */}
 
           <ambientLight
             intensity={0.1}
@@ -112,12 +116,13 @@ export const WorldScene = () => {
           {/* <Ground /> */}
           {/* <primitive object={grass} /> */}
           <Player />
+          {/* <Instances /> */}
           <ActiveCameraSystem />
           <ControlledMovementSystem />
           {/* <PlayerSystem /> */}
           <ThirdPersonCameraSystem />
           <CameraHelperSystem />
-          <GrassSystem />
+          <GroundSystem />
         </Physics>
       </ErrorBoundary>
     </group>
@@ -145,18 +150,40 @@ function Devtools() {
 
 const players = ECS.world.with("player", "sceneObject", "velocity")
 
-function GrassSystem() {
-  let ref = useRef<Mesh>()
-  let groundRef = useRef<Mesh>()
-  let noiseTexture = useNoiseTexture()
-  // const mem = useMemo(() => {
-  //   return createGround(noiseTexture)
-  // }, [noiseTexture])
-  const { grass } = useControls({
-    grass: true
-  })
+function Instances({ count = 500, temp = new Object3D() }) {
+  const ref = useRef<InstancedMesh>(null)
+  const heightmap = useHeightmap()
+  useEffect(() => {
+    // Set positions
 
-  const memo = useMemo(() => {
+    for (let i = 0; i < count; i++) {
+      let x = Math.random() * 500 - 512 / 2
+      let y = Math.random() * 500 - 512 / 2
+      temp.position.set(
+        x,
+        getYPosition(heightmap!, x, y, 5, [512 / 2, 512 / 2]),
+        y
+      )
+      temp.updateMatrix()
+      ref.current!.setMatrixAt(i, temp.matrix)
+    }
+    // Update the instance
+    ref.current!.instanceMatrix.needsUpdate = true
+  }, [])
+  const treeModel = useTreeModel()
+  return (
+    <instancedMesh
+      ref={ref}
+      args={[treeModel.geometry, treeModel.material, count]}
+    ></instancedMesh>
+  )
+}
+function GroundSystem() {
+  let ref = useRef<Mesh<InstancedBufferGeometry, RawShaderMaterial>>(null)
+  let groundRef = useRef<Mesh<PlaneGeometry, RawShaderMaterial>>(null)
+  let noiseTexture = useNoiseTexture()
+
+  const groundGeometry = useMemo(() => {
     const geom = new PlaneGeometry(width, width, resolution, resolution)
     geom.lookAt(new Vector3(0, 1, 0))
     geom.computeVertexNormals()
@@ -184,39 +211,40 @@ function GrassSystem() {
     // ref.current.visible = false
   })
 
-  const { scale } = useControls({
+  useControls({
     scale: {
-      value: 4.0,
+      value: 5.0,
       onChange(v) {
-        groundRef.current.material.uniforms.scale.value = v
-        ref.current.material.uniforms.scale.value = v
+        groundRef.current!.material.uniforms.scale.value = v
+        ref.current!.material.uniforms.scale.value = v
       }
     },
     offset: {
       value: [width / 2, width / 2],
       onChange(v) {
-        groundRef.current.material.uniforms.offsetX.value = v[0]
-        groundRef.current.material.uniforms.offsetY.value = v[1]
-        ref.current.material.uniforms.offsetX.value = v[0]
-        ref.current.material.uniforms.offsetY.value = v[1]
+        groundRef.current!.material.uniforms.offsetX.value = v[0]
+        groundRef.current!.material.uniforms.offsetY.value = v[1]
+        ref.current!.material.uniforms.offsetX.value = v[0]
+        ref.current!.material.uniforms.offsetY.value = v[1]
       }
     }
   })
-  // ground.geometry.computeVertexNormals()
-  // console.log(ground.material)
-  // ground.receiveShadow = true
 
   return (
     <>
       <Grass
+        offset={[512 / 2, 512 / 2]}
         ref={ref}
         noiseTexture={noiseTexture}
-        visible={grass}
-        scale={scale}
+        scale={4.0}
       />
-      {/* <Ground noiseTexture={noiseTexture} ref={groundRef} /> */}
-      <mesh ref={groundRef} geometry={memo}>
-        <GroundMaterial noiseTexture={noiseTexture} scale={scale} />
+      <mesh ref={groundRef} geometry={groundGeometry}>
+        <GroundMaterial
+          noiseTexture={noiseTexture}
+          scale={4.0}
+          offset={[512 / 2, 512 / 2]}
+          initialPosition={[0, 0]}
+        />
       </mesh>
     </>
   )
