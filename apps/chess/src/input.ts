@@ -1,4 +1,3 @@
-import { pipe } from "fp-ts/lib/function"
 import { Event } from "input-composer"
 
 /* Experimentation for a future Input Composer */
@@ -132,7 +131,7 @@ export const createKeyboardDevice = () => {
   return { dispose, getKey, getAxis, getVector, onActivity }
 }
 
-const createSpaceRageController = () => {
+const createController = () => {
   let activeScheme: "keyboard" | "gamepad" = "keyboard"
 
   const devices = {
@@ -178,7 +177,7 @@ const createSpaceRageController = () => {
           "ArrowUp",
           "ArrowDown"
         )
-        controls.fire = devices.keyboard.getKey("Space")
+        controls.fire = devices.keyboard.getKey("ShiftLeft")
         break
 
       case "gamepad":
@@ -198,4 +197,4 @@ const createSpaceRageController = () => {
   return { controls, update, dispose, devices }
 }
 
-export const controller = createSpaceRageController()
+export const controller = createController()

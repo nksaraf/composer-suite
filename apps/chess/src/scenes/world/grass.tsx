@@ -18,7 +18,7 @@ import {
 //Variables for blade mesh
 var joints = 4
 var bladeWidth = 0.12
-var bladeHeight = 1
+var bladeHeight = 0.5
 var instances = 200000
 //Patch side lengtwh
 export var width = 512

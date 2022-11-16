@@ -40,12 +40,12 @@ import { useRef } from "react"
 const zeroArray = new Array(16).fill(0)
 export function ControlledMovementSystem() {
   const { acceleration: accZ } = useControls({
-    acceleration: { value: 500, step: 10 }
+    acceleration: { value: 75, step: 10 }
   })
   const [player] = useEntities(players)
 
   const { scale, offset } = useControls({
-    scale: 1.0,
+    scale: 5.0,
     offset: [width / 2, width / 2]
   })
 
@@ -58,9 +58,9 @@ export function ControlledMovementSystem() {
     let [player] = players
     if (!player) return
     const velocity = player.velocity
-    const { move, aim } = controller.controls
+    const { move, aim, fire } = controller.controls
 
-    acceleration.z = accZ
+    let forwardAcceleration = accZ
 
     const frameDecceleration = new Vector3(
       velocity.x * decceleration.x,
@@ -79,19 +79,19 @@ export function ControlledMovementSystem() {
     const _A = new Vector3()
     const _R = controlObject.quaternion.clone()
 
-    // if (this._input._keys.shift) {
-    //   acc.multiplyScalar(2.0)
-    // }
+    if (fire) {
+      forwardAcceleration *= 2
+    }
 
     // if (this._stateMachine._currentState.Name == "dance") {
     //   acc.multiplyScalar(0.0)
     // }
 
     if (move.y > 0) {
-      velocity.z += accZ * dt
+      velocity.z += forwardAcceleration * dt
     }
     if (move.y < 0) {
-      velocity.z -= accZ * dt
+      velocity.z -= forwardAcceleration * dt
     }
     if (move.x < 0) {
       _A.set(0, 1, 0)
@@ -143,7 +143,6 @@ export function ControlledMovementSystem() {
 
     const angle = prevPosition.angleTo(nextPosition)
     vec.x = angle
-    console.log(sideways, forward, angle)
 
     sideways.multiplyScalar(velocity.x * dt)
     forward.multiplyScalar(velocity.z * dt)
@@ -160,21 +159,21 @@ export function ControlledMovementSystem() {
       scale,
       offset
     )
-    controlObject.position.y = lerp(controlObject.position.y, y, dt * 5)
+    controlObject.position.y = lerp(controlObject.position.y, y, dt * 3)
 
-    ref.current.position.copy(controlObject.position)
-    ref.current.position.y += 5
+    // ref.current.position.copy(controlObject.position)
+    // ref.current.position.y += 5
 
-    ref.current.quaternion.copy(
-      new Quaternion().setFromAxisAngle(new Vector3(0, 0, 1), angle * Math.PI)
-    )
+    // ref.current.quaternion.copy(
+    //   new Quaternion().setFromAxisAngle(new Vector3(0, 0, 1), angle * Math.PI)
+    // )
   })
 
   return (
     <>
-      <mesh ref={ref}>
+      {/* <mesh ref={ref}>
         <boxGeometry />
-      </mesh>
+      </mesh> */}
       {/* {zeroArray.map((a, i) =>
         zeroArray.map((a, j) => (
           <mesh
@@ -256,7 +255,7 @@ export const Player = () => {
 
     if (GhostState.is("idle") && prev !== "idle") {
       cow.current.actions.Walk.fadeOut(0.3)
-      cow.current.actions.Walk.setEffectiveTimeScale(5)
+      // cow.current.actions.Walk.setEffectiveTimeScale(5)
       adventurer.current.actions.Walk.fadeOut(0.3)
       adventurer.current.actions.Idle_Sword.reset().fadeIn(0.3).play()
       cow.current.actions.Idle.reset().fadeIn(0.3).play()
@@ -274,6 +273,7 @@ export const Player = () => {
   return (
     <>
       <ECS.Entity>
+        <ECS.Component name="name" data="MainPlayer" />
         <ECS.Component name="player" data={true} />
         <ECS.Component name="focus" data={true} />
         {/* <ECS.Component name="rigidBody"> */}
@@ -290,11 +290,10 @@ export const Player = () => {
         > */}
         {/* <CapsuleCollider args={[1, 2]} position={[0, 20, 0]}> */}
         <ECS.Component name="sceneObject">
-          <Cow.Model ref={cow} visible={false}>
+          <Cow.Model ref={cow}>
             <Adventurer.Model
               ref={adventurer}
               scale={3}
-              visible={false}
               position-x={-3}
               castShadow
             />

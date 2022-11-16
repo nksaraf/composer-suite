@@ -27,7 +27,7 @@ export const ThirdPersonCameraSystem = () => {
         .applyQuaternion(player.sceneObject.quaternion)
         .add(player.sceneObject.position)
 
-      const t = 1.0 - Math.pow(0.001, dt)
+      const t = (1 - Math.pow(0.001, dt)) / 3
 
       const cameraLookAt = tmpLookAt
         .copy(lookAt)

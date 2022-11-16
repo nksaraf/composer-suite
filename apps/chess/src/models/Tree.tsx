@@ -49,7 +49,7 @@ export function Tree(props: JSX.IntrinsicElements["group"]) {
     </group>
   )
 }
-export function useTreeModel(): { nodes: any; materials: any } {
+export function useTreeModel() {
   const { nodes, materials } = useGLTF(
     "/models/adventurers_rest.glb"
   ) as unknown as GLTFResult

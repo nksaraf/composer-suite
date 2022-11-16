@@ -9,6 +9,7 @@ export const GroundMaterial = forwardRef<
   RawShaderMaterial,
   {
     noiseTexture: Texture
+    groundTexture: Texture
     offset: [number, number]
     scale: number
     initialPosition: [number, number]
@@ -16,6 +17,7 @@ export const GroundMaterial = forwardRef<
 >(
   (
     {
+      groundTexture,
       noiseTexture,
       offset = [0, 0],
       initialPosition = [0, 0],
@@ -25,7 +27,7 @@ export const GroundMaterial = forwardRef<
     ref
   ) => {
     let color = "#456789"
-    let material = useRef()
+    let material = useRef<RawShaderMaterial>()
     useControls({
       groundColor: {
         value: color,
@@ -40,6 +42,7 @@ export const GroundMaterial = forwardRef<
         ref={mergeRefs([ref, material])}
         uniforms={{
           noiseTexture: { value: noiseTexture },
+          groundTexture: { value: groundTexture },
           posX: { value: initialPosition[0] },
           posZ: { value: initialPosition[1] },
           width: { value: noiseTexture.source.data.width },
@@ -50,45 +53,47 @@ export const GroundMaterial = forwardRef<
         }}
         vertexShader={
           /* glsl */ `
-        uniform mat4 projectionMatrix;
-        uniform mat4 viewMatrix;
-        uniform mat4 modelMatrix;
-        uniform float posZ;
-        uniform float posX;
-        uniform float offsetX;
-        uniform float offsetY;
+            uniform mat4 projectionMatrix;
+            uniform mat4 viewMatrix;
+            uniform mat4 modelMatrix;
+            uniform float posZ;
+            uniform float posX;
+            uniform float offsetX;
+            uniform float offsetY;
 
-        uniform sampler2D noiseTexture;
-        uniform highp float width;
-        uniform highp float scale;
-        uniform bool elevate;
-    
-        attribute vec3 position;
-    
-        varying lowp vec4 cord;
-    
-        void main() {
-          vec3 pos = vec3(0.0);
-          pos.x = posX;
-          pos.z = posZ;
-          pos.y = 0.0;
-          
-          vec2 texturePosition = (pos.xz + position.xz - vec2(offsetX, offsetY)) / (width * scale);
-          cord = texture2D(noiseTexture, texturePosition);
-          vec3 vPos = position.xyz;
-          vPos.y = ((2.0 * cord.r) - 1.0) * 50.0;
-          gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(vPos, 1.0);
-        }
-      `
+            uniform sampler2D noiseTexture;
+            uniform highp float width;
+            uniform highp float scale;
+            uniform bool elevate;
+        
+            attribute vec3 position;
+            uniform sampler2D groundTexture;
+        
+            varying lowp vec4 cord;
+            varying vec4 vColor;
+            void main() {
+              vec3 pos = vec3(0.0);
+              pos.x = posX;
+              pos.z = posZ;
+              pos.y = 0.0;
+              
+              vec2 texturePosition = (pos.xz + position.xz - vec2(offsetX, offsetY)) / (width * scale);
+              cord = texture2D(noiseTexture, texturePosition);
+              vec3 vPos = position.xyz;
+              vPos.y = ((2.0 * cord.r) - 1.0) * 50.0;
+              gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(vPos, 1.0);
+              vColor =  texture2D(groundTexture, texturePosition);
+            }
+          `
         }
         fragmentShader={
           /* glsl */ `
-        uniform lowp vec3 color;
-      varying lowp vec4 cord;
-      void main() {
-        gl_FragColor = vec4(color, 1.0);
-      }
-    `
+            varying highp vec4 vColor;
+            void main() {
+              gl_FragColor = vColor;
+              // gl_FragColor = vec4(color/, 1.0);
+            }
+          `
         }
         {...props}
       />

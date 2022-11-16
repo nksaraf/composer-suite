@@ -36,7 +36,7 @@ export function GrassSystem() {
     grassMaterial.uniforms.posZ.value = z
   })
 
-  useControls({
+  useControls({ 
     scale: {
       value: 4.0,
       onChange(v: number) {

@@ -1,7 +1,5 @@
-import { RigidBodyApi } from "@react-three/rapier"
 import { makeStore } from "statery"
-import { AudioListener, Object3D, Vector3 } from "three"
-import { createReactAPI } from "miniplex/react"
+import { AudioListener } from "three"
 
 export enum Layers {
   Player,
@@ -14,41 +12,21 @@ export const gameplayStore = makeStore({
   listener: null as AudioListener | null
 })
 
-import { World } from "miniplex"
-const world = new World<Entity>()
+import { parse } from "../../../engine/world"
 
-export type Entity = {
-  asteroid?: {
-    spawnPosition: Vector3
-    scale: number
-  }
+import json from "../home.json?raw"
+// const rawData = await fetch("/__editor/scene/home.json").then((res) =>
+//   res.text()
+// )
 
-  player?: boolean
-  bullet?: JSX.Element
-  debris?: JSX.Element
-  sparks?: JSX.Element
-  smoke?: JSX.Element
-  pickup?: JSX.Element
-  asteroidExplosion?: JSX.Element
-
-  sound?: JSX.Element
-
-  velocity?: Vector3
-  health?: number
-
-  jsx?: JSX.Element
-
-  sceneObject?: Object3D
-  rigidBody?: RigidBodyApi
-
-  age?: number
-  destroyAfter?: number
-
-  camera?: true
-  focus?: true
-  thirdPerson?: true
-  helper?: true
-  active?: true
+let world: ReturnType<typeof parse>
+if (globalThis.world) {
+  world = globalThis.world
+} else {
+  world = parse(json)
 }
+console.log(world)
 
-export const ECS = createReactAPI<Entity>(world)
+globalThis.game = world
+
+export const ECS = world

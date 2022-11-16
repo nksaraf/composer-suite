@@ -28,7 +28,6 @@ const mergeRefs = (...refs) => {
   }
 }
 
-const velocity = 0.1
 type GLTFResult = GLTF & {
   nodes: {
     Cube001: THREE.SkinnedMesh

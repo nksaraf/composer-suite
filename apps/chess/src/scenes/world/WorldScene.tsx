@@ -51,14 +51,36 @@ import {
   PlaneGeometry,
   RawShaderMaterial,
   RepeatWrapping,
+  Texture,
   Vector3
 } from "three"
 import { useState } from "react"
 import { GroundMaterial } from "./GroundMaterial"
 import { getYPosition, useHeightmap } from "./useHeightmap"
 
+export const World = ({ children }) => {
+  return (
+    <group>
+      <ErrorBoundary fallback={<group></group>}>
+        <Physics
+          updatePriority={Stage.Physics}
+          colliders={false}
+          timeStep="vary"
+        >
+          {children}
+          <ActiveCameraSystem />
+          <ControlledMovementSystem />
+          <ThirdPersonCameraSystem />
+          <CameraHelperSystem />
+          <GroundSystem />
+        </Physics>
+      </ErrorBoundary>
+    </group>
+  )
+}
+
 export const WorldScene = () => {
-  const ref = useRef<DirectionalLight>(null)
+  // const ref = useRef<DirectionalLight>(null)
 
   // useHelper(
   //   {
@@ -74,58 +96,33 @@ export const WorldScene = () => {
     heigth: { value: 512, step: 5 }
   })
   return (
-    <group>
-      <ErrorBoundary fallback={<group></group>}>
-        <Physics
-          updatePriority={Stage.Physics}
-          colliders={false}
-          timeStep="vary"
-        >
-          <Devtools />
-          <Skybox />
-          <OrbitControls />
-          <PlayerCamera />
-          <EditorCamera />
+    <World>
+      <Devtools />
+      <Skybox />
+      <OrbitControls />
+      <PlayerCamera />
+      <EditorCamera />
 
-          <ambientLight
-            intensity={0.1}
-            layers-mask={bitmask(Layers.Default, Layers.TransparentFX)}
-          />
-          <directionalLight
-            position={[20, 20, 20]}
-            intensity={1}
-            shadow-mapSize-width={width}
-            shadow-mapSize-height={heigth}
-            shadow-camera-top={100}
-            shadow-camera-bottom={-100}
-            shadow-camera-left={-100}
-            shadow-camera-right={100}
-            castShadow
-            ref={ref}
-            layers-mask={bitmask(Layers.Default, Layers.TransparentFX)}
-          />
-          <axesHelper scale={512} />
-          <Html>
-            <div
-              style={{}}
-              // ref={(el) => {
-              //   el.appendChild(noiseTexture.source.data)
-              // }}
-            ></div>
-          </Html>
-          {/* <Ground /> */}
-          {/* <primitive object={grass} /> */}
-          <Player />
-          {/* <Instances /> */}
-          <ActiveCameraSystem />
-          <ControlledMovementSystem />
-          {/* <PlayerSystem /> */}
-          <ThirdPersonCameraSystem />
-          <CameraHelperSystem />
-          <GroundSystem />
-        </Physics>
-      </ErrorBoundary>
-    </group>
+      <ambientLight
+        intensity={0.1}
+        layers-mask={bitmask(Layers.Default, Layers.TransparentFX)}
+      />
+      <directionalLight
+        position={[20, 20, 100]}
+        intensity={1}
+        shadow-mapSize-width={width}
+        shadow-mapSize-height={heigth}
+        shadow-camera-top={100}
+        shadow-camera-bottom={-100}
+        shadow-camera-left={-100}
+        shadow-camera-right={100}
+        castShadow
+        layers-mask={bitmask(Layers.Default, Layers.TransparentFX)}
+      />
+      <axesHelper scale={512} />
+      <Player />
+      <Instances />
+    </World>
   )
 }
 
@@ -178,14 +175,25 @@ function Instances({ count = 500, temp = new Object3D() }) {
     ></instancedMesh>
   )
 }
+
 function GroundSystem() {
   let ref = useRef<Mesh<InstancedBufferGeometry, RawShaderMaterial>>(null)
   let groundRef = useRef<Mesh<PlaneGeometry, RawShaderMaterial>>(null)
   let noiseTexture = useNoiseTexture()
-
+  let heightmap = useHeightmap()
   const groundGeometry = useMemo(() => {
-    const geom = new PlaneGeometry(width, width, resolution, resolution)
+    const geom = new PlaneGeometry(width, width, resolution / 8, resolution / 8)
     geom.lookAt(new Vector3(0, 1, 0))
+    let attr = geom.getAttribute("position")
+    for (var i = 0; i < attr.count; i++) {
+      attr.setY(
+        i,
+        getYPosition(heightmap!, attr.getX(i), attr.getZ(i), 5.0, [
+          512 / 2,
+          512 / 2
+        ])
+      )
+    }
     geom.computeVertexNormals()
     return geom
   }, [])
@@ -198,15 +206,33 @@ function GroundSystem() {
     ref.current.position.x = player.sceneObject.position.x
     ref.current.position.z = player.sceneObject.position.z
 
-    groundRef.current.position.x = player.sceneObject.position.x
-    groundRef.current.position.z = player.sceneObject.position.z
-
+    // if (
+    //   groundRef.current.position.z != player.sceneObject.position.z ||
+    //   groundRef.current.position.x != player.sceneObject.position.x
+    // ) {
+    //   let x = player.sceneObject.position.x
+    //   let y = player.sceneObject.position.z
+    //   let attr = groundGeometry.getAttribute("position")
+    //   for (var i = 0; i < attr.count; i++) {
+    //     attr.setY(
+    //       i,
+    //       getYPosition(heightmap!, attr.getX(i) + x, attr.getZ(i) + y, 5.0, [
+    //         512 / 2,
+    //         512 / 2
+    //       ])
+    //     )
+    //   }
+    //   attr.needsUpdate = true
+    //   groundGeometry.computeVertexNormals()
+    //   // groundRef.current.position.x = player.sceneObject.position.x
+    //   // groundRef.current.position.z = player.sceneObject.position.z
+    // }
     ref.current.material.uniforms.posX.value = player.sceneObject.position.x
     ref.current.material.uniforms.posZ.value = player.sceneObject.position.z
-    groundRef.current.material.uniforms.posX.value =
-      player.sceneObject.position.x
-    groundRef.current.material.uniforms.posZ.value =
-      player.sceneObject.position.z
+    // groundRef.current.material.uniforms.posX.value =
+    // player.sceneObject.position.x
+    // groundRef.current.material.uniforms.posZ.value =
+    // player.sceneObject.position.z
 
     // ref.current.visible = false
   })
@@ -215,19 +241,23 @@ function GroundSystem() {
     scale: {
       value: 5.0,
       onChange(v) {
-        groundRef.current!.material.uniforms.scale.value = v
+        // groundRef.current!.material.uniforms.scale.value = v
         ref.current!.material.uniforms.scale.value = v
       }
     },
     offset: {
       value: [width / 2, width / 2],
       onChange(v) {
-        groundRef.current!.material.uniforms.offsetX.value = v[0]
-        groundRef.current!.material.uniforms.offsetY.value = v[1]
+        // groundRef.current!.material.uniforms.offsetX.value = v[0]
+        // groundRef.current!.material.uniforms.offsetY.value = v[1]
         ref.current!.material.uniforms.offsetX.value = v[0]
         ref.current!.material.uniforms.offsetY.value = v[1]
       }
     }
+  })
+
+  const texture = useTexture("/textures/grasslands.jpeg", (text) => {
+    text.wrapS = text.wrapT = RepeatWrapping
   })
 
   return (
@@ -238,13 +268,15 @@ function GroundSystem() {
         noiseTexture={noiseTexture}
         scale={4.0}
       />
-      <mesh ref={groundRef} geometry={groundGeometry}>
-        <GroundMaterial
+      <mesh ref={groundRef} geometry={groundGeometry} receiveShadow>
+        {/* <GroundMaterial
           noiseTexture={noiseTexture}
+          groundTexture={texture}
           scale={4.0}
           offset={[512 / 2, 512 / 2]}
           initialPosition={[0, 0]}
-        />
+        /> */}
+        <meshStandardMaterial map={texture} />
       </mesh>
     </>
   )
@@ -264,16 +296,13 @@ export function useNoiseTexture() {
 
 function PlayerCamera() {
   const controls = useControls("camera", {
-    editor: true
+    editor: false
   })
   return (
     <ECS.Entity>
-      <ECS.Component name="camera" data={true} />
-      {!controls.editor ? (
-        <ECS.Component name="active" data={true} />
-      ) : (
-        <ECS.Component name="helper" data={true} />
-      )}
+      <ECS.Component name="name" data="AnotherCamera" />
+      <ECS.Component name="camera" data={{}} />
+      {!controls.editor ? <ECS.Component name="active" data={true} /> : null}
       {/* <ECS.Component name="active" data={Tag} /> */}
       <ECS.Component name="thirdPerson" data={true} />
       <ECS.Component name="sceneObject">
@@ -291,6 +320,7 @@ function EditorCamera() {
   })
   return (
     <ECS.Entity>
+      <ECS.Component name="name" data="EditorCamera" />
       <ECS.Component name="camera" data={true} />
       {/* <ECS.Component name="helper" data={Tag} /> */}
       {controls.editor && <ECS.Component name="active" data={true} />}

@@ -1,0 +1,93 @@
+[
+  {
+    "name": "World"
+  },
+  {
+    "name": "Tree",
+    "script": "/src/scripts/tree.tsx",
+    "transform": {
+      "position": [0, 0, 0],
+      "rotation": [0, 0, 0, "XYZ"],
+      "scale": [1, 1, 1]
+    }
+  },
+  {
+    "name": "MainCamera",
+    "camera": {},
+    "active": true,
+    "transform": {
+      "position": [
+        -6.2543980911614625, 12.583304698929402, 0.18916851980115634
+      ],
+      "rotation": [
+        -2.6011184227461657,
+        -0.17013015650461485,
+        -3.0403411049464184,
+        "XYZ"
+      ],
+      "scale": [1, 1, 1]
+    }
+  },
+  {
+    "name": "Ground",
+    "transform": {
+      "position": [0, 0, 0],
+      "rotation": [-1.5707963267948966, 0, 0, "XYZ"],
+      "scale": [50, 50, 50]
+    },
+    "physics": {
+      "type": "fixed"
+    },
+    "mesh": {
+      "receiveShadow": true,
+      "geometry": {
+        "type": "planeGeometry"
+      },
+      "material": {
+        "type": "meshStandardMaterial",
+        "props": {}
+      }
+    },
+    "assets": {
+      "map": {
+        "type": "texture",
+        "url": "/textures/grass.jpeg",
+        "attach": "mesh.material.diffuseMap"
+      }
+    }
+  },
+  {
+    "name": "Player",
+    "controller": {
+      "movement": {
+        "velocity": [0, 0, 0],
+        "decceleration": [-0.0005, -0.0001, -5],
+        "acceleration": [1, 0.25, 50]
+      }
+    },
+    "gltf": {
+      "url": "/Ghost.gltf"
+    },
+    "cameraTarget": {
+      "positionOffset": [-1, 5, -10],
+      "lookAtOffset": [-1, 2, 2]
+    },
+    "transform": {
+      "position": [5, 0, 5],
+      "rotation": [0, 0, 0, "XYZ"],
+      "scale": [1, 1, 1]
+    }
+  },
+  {
+    "name": "Light",
+    "transform": {
+      "position": [-0.013840872411557355, 9.16984685801466, 5.294158275792355],
+      "rotation": [0, 0, 0, "XYZ"],
+      "scale": [1, 1, 1]
+    },
+    "directionalLight": {
+      "intensity": 1,
+      "castShadow": true
+    }
+  }
+]
