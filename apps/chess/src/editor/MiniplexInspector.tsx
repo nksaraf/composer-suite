@@ -1,7 +1,7 @@
 import * as UI from "ui-composer"
 import { IEntity, Query, RegisteredEntity, World } from "miniplex"
 import { useAutoRefresh } from "../lib/useAutoRefresh"
-import { ECS, Entity } from "../scenes/world/gameplay/state"
+import { game, Entity } from "../scenes/world/gameplay/state"
 import { Fragment } from "react"
 import { Object3D, Quaternion, Vector3 } from "three"
 import { RigidBodyApi } from "@react-three/rapier"
@@ -166,7 +166,7 @@ export const MiniplexArchetypeInspector = ({
 }: {
   query: Query<Entity>
 }) => {
-  const archetype = ECS.useArchetype(...query)
+  const archetype = game.useArchetype(...query)
 
   return (
     <UI.Panel>

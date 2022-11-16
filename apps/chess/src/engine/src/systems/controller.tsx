@@ -1,67 +1,66 @@
-import { useFrame } from "@react-three/fiber";
-import { useControls } from "leva";
-import { useEntities } from "miniplex/react";
-import { useRef } from "react";
-import { useStore } from "statery";
-import { Vector3, Quaternion } from "three";
-import { lerp } from "three/src/math/MathUtils";
-import { game } from "../game";
-import { store } from "./editor";
-import { controller } from "./input";
+import { useFrame } from "@react-three/fiber"
+import { useControls } from "leva"
+import { useEntities } from "miniplex/react"
+import { useRef } from "react"
+import { useStore } from "statery"
+import { Vector3, Quaternion } from "three"
+import { lerp } from "three/src/math/MathUtils"
+import { controller } from "../../../input"
+import { game } from "../../../scenes/world/gameplay/state"
+import { store } from "./editor"
 
 declare global {
   export interface Components {
     controller?: {
       movement: {
-        velocity: [number, number, number];
-        acceleration: [number, number, number];
-        decceleration: [number, number, number];
-      };
-    };
+        velocity: [number, number, number]
+        acceleration: [number, number, number]
+        decceleration: [number, number, number]
+      }
+    }
   }
 }
 
-const decceleration = new Vector3(-0.0005, -0.0001, -5.0);
-const acceleration = new Vector3(1, 0.25, 50.0);
-const velocity = new Vector3();
-const players = game.world.with("controller", "transform");
-const quat = new Quaternion();
+const decceleration = new Vector3(-0.0005, -0.0001, -5.0)
+const acceleration = new Vector3(1, 0.25, 50.0)
+const velocity = new Vector3()
+const players = game.world.with("controller", "transform")
+const quat = new Quaternion()
 
 export function ControlledMovementSystem() {
-  const { editor } = useStore(store);
+  const { editor } = useStore(store)
   useFrame((_, dt) => {
     if (editor) {
-      return;
+      return
     }
-    let [player] = players;
-    if (!player) return;
-    velocity.set(...player.controller.movement.velocity);
-    decceleration.set(...player.controller.movement.decceleration);
-    acceleration.set(...player.controller.movement.acceleration);
+    let [player] = players
+    if (!player) return
+    velocity.set(...player.controller.movement.velocity)
+    decceleration.set(...player.controller.movement.decceleration)
+    acceleration.set(...player.controller.movement.acceleration)
 
-    const { move, aim, fire } = controller.controls;
-    console.log(move, fire);
+    const { move, aim, fire } = controller.controls
 
-    let forwardAcceleration = acceleration.z;
+    let forwardAcceleration = acceleration.z
 
     const frameDecceleration = new Vector3(
       velocity.x * decceleration.x,
       velocity.y * decceleration.y,
       velocity.z * decceleration.z
-    );
-    frameDecceleration.multiplyScalar(dt);
+    )
+    frameDecceleration.multiplyScalar(dt)
     frameDecceleration.z =
       Math.sign(frameDecceleration.z) *
-      Math.min(Math.abs(frameDecceleration.z), Math.abs(velocity.z));
+      Math.min(Math.abs(frameDecceleration.z), Math.abs(velocity.z))
 
-    velocity.add(frameDecceleration);
+    velocity.add(frameDecceleration)
 
-    const _Q = new Quaternion();
-    const _A = new Vector3();
-    const _R = quat.setFromEuler(player.transform.rotation, true);
+    const _Q = new Quaternion()
+    const _A = new Vector3()
+    const _R = quat.setFromEuler(player.transform.rotation, true)
 
     if (fire) {
-      forwardAcceleration *= 2;
+      forwardAcceleration *= 2
     }
 
     // if (this._stateMachine._currentState.Name == "dance") {
@@ -69,39 +68,39 @@ export function ControlledMovementSystem() {
     // }
 
     if (move.y > 0) {
-      velocity.z += forwardAcceleration * dt;
+      velocity.z += forwardAcceleration * dt
     }
     if (move.y < 0) {
-      velocity.z -= forwardAcceleration * dt;
+      velocity.z -= forwardAcceleration * dt
     }
     if (move.x < 0) {
-      _A.set(0, 1, 0);
-      _Q.setFromAxisAngle(_A, 4.0 * Math.PI * dt * acceleration.y);
-      _R.multiply(_Q);
+      _A.set(0, 1, 0)
+      _Q.setFromAxisAngle(_A, 4.0 * Math.PI * dt * acceleration.y)
+      _R.multiply(_Q)
     }
     if (move.x > 0) {
-      _A.set(0, 1, 0);
-      _Q.setFromAxisAngle(_A, 4.0 * -Math.PI * dt * acceleration.y);
-      _R.multiply(_Q);
+      _A.set(0, 1, 0)
+      _Q.setFromAxisAngle(_A, 4.0 * -Math.PI * dt * acceleration.y)
+      _R.multiply(_Q)
     }
 
-    const forward = new Vector3(0, 0, 1);
-    forward.applyQuaternion(_R);
-    forward.normalize();
+    const forward = new Vector3(0, 0, 1)
+    forward.applyQuaternion(_R)
+    forward.normalize()
 
-    const sideways = new Vector3(1, 0, 0);
-    sideways.applyQuaternion(_R);
-    sideways.normalize();
+    const sideways = new Vector3(1, 0, 0)
+    sideways.applyQuaternion(_R)
+    sideways.normalize()
 
-    sideways.multiplyScalar(velocity.x * dt);
-    forward.multiplyScalar(velocity.z * dt);
+    sideways.multiplyScalar(velocity.x * dt)
+    forward.multiplyScalar(velocity.z * dt)
 
     // controlObject.position.add(forward);
     // controlObject.position.add(sideways);
 
-    player.transform.position.add(forward.add(sideways));
-    player.transform.rotation.setFromQuaternion(_R);
-    player.controller.movement.velocity = [velocity.x, velocity.y, velocity.z];
+    player.transform.position.add(forward.add(sideways))
+    player.transform.rotation.setFromQuaternion(_R)
+    player.controller.movement.velocity = [velocity.x, velocity.y, velocity.z]
 
     // let y = getYPosition(
     //   heightmap!,
@@ -118,7 +117,7 @@ export function ControlledMovementSystem() {
     // ref.current.quaternion.copy(
     //   new Quaternion().setFromAxisAngle(new Vector3(0, 0, 1), angle * Math.PI)
     // )
-  });
+  })
 
   return (
     <>
@@ -182,5 +181,5 @@ export function ControlledMovementSystem() {
         <boxGeometry />
       </mesh> */}
     </>
-  );
+  )
 }

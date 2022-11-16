@@ -4,7 +4,7 @@
   },
   {
     "name": "Tree",
-    "script": "/src/scripts/tree.tsx",
+    "script": "/src/engine/src/scripts/tree.tsx",
     "transform": {
       "position": [0, 0, 0],
       "rotation": [0, 0, 0, "XYZ"],
@@ -15,6 +15,9 @@
     "name": "MainCamera",
     "camera": {},
     "active": true,
+    "controls": {
+      "type": "thirdPerson"
+    },
     "transform": {
       "position": [
         -6.2543980911614625, 12.583304698929402, 0.18916851980115634
@@ -66,7 +69,7 @@
       }
     },
     "gltf": {
-      "url": "/Ghost.gltf"
+      "url": "/animals/Cow.gltf"
     },
     "cameraTarget": {
       "positionOffset": [-1, 5, -10],

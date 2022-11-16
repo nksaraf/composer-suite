@@ -29,4 +29,4 @@ console.log(world)
 
 globalThis.game = world
 
-export const ECS = world
+export const game = world

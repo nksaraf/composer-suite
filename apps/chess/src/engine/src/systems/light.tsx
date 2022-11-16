@@ -1,29 +1,32 @@
-import { Html, PivotControls, Plane, Sphere } from "@react-three/drei";
-import { DirectionalLight, DirectionalLightHelper } from "three";
-import { game } from "../game";
-import { Helper } from "../components/Helper";
-import { store } from "./editor";
-import { useStore } from "statery";
-import { DirectionalLightProps, useFrame } from "@react-three/fiber";
-export const directionalLights = game.world.with("directionalLight");
-export const directionalLightObjects = game.world.with("directionalLight$");
+import { Html, PivotControls, Plane, Sphere } from "@react-three/drei"
+import { DirectionalLight, DirectionalLightHelper } from "three"
+import { Helper } from "../components/Helper"
+import { store } from "./editor"
+import { useStore } from "statery"
+import { DirectionalLightProps, useFrame } from "@react-three/fiber"
+import { game } from "../../../scenes/world/gameplay/state"
+export const directionalLights = game.world.with("directionalLight")
+export const directionalLightObjects = game.world.with(
+  "directionalLight$",
+  "transform"
+)
 
 declare global {
   export interface Components {
-    directionalLight?: DirectionalLightProps;
-    directionalLight$?: DirectionalLight;
+    directionalLight?: DirectionalLightProps
+    directionalLight$?: DirectionalLight
   }
 }
 
-export default function LightEditorSystem() {
-  const { editor } = useStore(store);
+export default function LightSystem() {
+  const { editor } = useStore(store)
   useFrame(() => {
     for (const entity of directionalLightObjects) {
-      entity.directionalLight$.position.copy(entity.transform.position);
-      entity.directionalLight$.rotation.copy(entity.transform.rotation);
-      entity.directionalLight$.scale.copy(entity.transform.scale);
+      entity.directionalLight$.position.copy(entity.transform.position)
+      entity.directionalLight$.rotation.copy(entity.transform.rotation)
+      entity.directionalLight$.scale.copy(entity.transform.scale)
     }
-  });
+  })
   return (
     <game.Entities in={directionalLights}>
       {(entity) => (
@@ -41,34 +44,23 @@ export default function LightEditorSystem() {
               <Sphere
                 scale={0.25}
                 onPointerDown={(e) => {
-                  e.stopPropagation();
-                  store.set(({ entities: selectedEntities }) => {
-                    console.log("e", e);
-                    if (e.shiftKey) {
-                      return { entities: [...selectedEntities, entity] };
-                    }
-                    return { entities: [entity] };
-                  });
+                  e.stopPropagation()
+                  selectEntity(entity)
                 }}
               >
                 <Html
                   style={{
-                    userSelect: "none",
+                    userSelect: "none"
                   }}
                   pointerEvents="none"
                 >
                   <span
                     style={{
-                      fontSize: "1rem",
+                      fontSize: "1rem"
                     }}
                     onClick={(e) => {
-                      e.stopPropagation();
-                      store.set(({ entities: selectedEntities }) => {
-                        if (e.shiftKey) {
-                          return { entities: [...selectedEntities, entity] };
-                        }
-                        return { entities: [entity] };
-                      });
+                      e.stopPropagation()
+                      selectEntity(entity)
                     }}
                   >
                     💡
@@ -87,5 +79,6 @@ export default function LightEditorSystem() {
         </>
       )}
     </game.Entities>
-  );
+  )
 }
+

@@ -1,49 +1,18 @@
-import {
-  Debug,
-  interactionGroups,
-  Physics,
-  RigidBody
-} from "@react-three/rapier"
+import { Debug, Physics } from "@react-three/rapier"
 import { bitmask, Layers } from "render-composer"
 import { Skybox } from "../../common/Skybox"
 import { Stage } from "../../configuration"
 import { ErrorBoundary } from "react-error-boundary"
 import { Perf } from "r3f-perf"
-import {
-  Box,
-  Capsule,
-  Html,
-  OrbitControls,
-  PerspectiveCamera,
-  Plane,
-  useHelper,
-  useTexture
-} from "@react-three/drei"
+import { useTexture } from "@react-three/drei"
 import { Grass, resolution, width } from "./grass"
 
-import { useControls } from "leva"
-import { ControlledMovementSystem, Player } from "./Player"
-import { SidebarTunnel, store } from "../../state"
-import {
-  MiniplexEntityInspector,
-  MiniplexInspector
-} from "../../editor/MiniplexInspector"
-import { ECS } from "./gameplay/state"
-import {
-  ActiveCameraSystem,
-  CameraHelperSystem,
-  ThirdPersonCameraSystem
-} from "./systems/ThirdPersonCameraSystem"
-import { Tree, useTreeModel } from "../../models/Tree"
-import { Ghost } from "../../models/Ghost"
-import * as AC from "audio-composer"
-import { useCapture } from "../../lib/useCapture"
-import { Adventurer } from "./Adventurer"
+import { folder, useControls } from "leva"
+import { game } from "./gameplay/state"
+import { useTreeModel } from "../../models/Tree"
 import { useFrame } from "@react-three/fiber"
-import { useEffect, useEffect as useLayoutEffect, useMemo, useRef } from "react"
+import { useEffect, useMemo, useRef } from "react"
 import {
-  CameraHelper,
-  DirectionalLight,
   InstancedBufferGeometry,
   InstancedMesh,
   Mesh,
@@ -51,14 +20,21 @@ import {
   PlaneGeometry,
   RawShaderMaterial,
   RepeatWrapping,
-  Texture,
   Vector3
 } from "three"
-import { useState } from "react"
-import { GroundMaterial } from "./GroundMaterial"
 import { getYPosition, useHeightmap } from "./useHeightmap"
+import CameraSystem, {
+  ActiveCameraSystem
+} from "../../engine/src/systems/camera"
+import EditorSystem from "../../engine/src/systems/editor"
+import RenderSystem from "../../engine/src/systems/render"
+import { GLTFSystem } from "../../engine/src/systems/gltf"
+import { ControlledMovementSystem } from "../../engine/src/systems/controller"
+import MeshSystem from "../../engine/src/systems/mesh"
+import { ScriptSystem } from "../../engine/src/systems/script"
+import LightSystem from "../../engine/src/systems/light"
 
-export const World = ({ children }) => {
+export const World = ({ children }: React.PropsWithChildren<{}>) => {
   return (
     <group>
       <ErrorBoundary fallback={<group></group>}>
@@ -68,11 +44,6 @@ export const World = ({ children }) => {
           timeStep="vary"
         >
           {children}
-          <ActiveCameraSystem />
-          <ControlledMovementSystem />
-          <ThirdPersonCameraSystem />
-          <CameraHelperSystem />
-          <GroundSystem />
         </Physics>
       </ErrorBoundary>
     </group>
@@ -80,34 +51,16 @@ export const World = ({ children }) => {
 }
 
 export const WorldScene = () => {
-  // const ref = useRef<DirectionalLight>(null)
-
-  // useHelper(
-  //   {
-  //     get current() {
-  //       return ref.current.shadow.camera
-  //     }
-  //   },
-  //   CameraHelper
-  // )
-
-  const { width, heigth } = useControls({
-    width: { value: 512, step: 5 },
-    heigth: { value: 512, step: 5 }
-  })
   return (
     <World>
       <Devtools />
       <Skybox />
-      <OrbitControls />
-      <PlayerCamera />
-      <EditorCamera />
 
       <ambientLight
         intensity={0.1}
         layers-mask={bitmask(Layers.Default, Layers.TransparentFX)}
       />
-      <directionalLight
+      {/* <directionalLight
         position={[20, 20, 100]}
         intensity={1}
         shadow-mapSize-width={width}
@@ -118,20 +71,33 @@ export const WorldScene = () => {
         shadow-camera-right={100}
         castShadow
         layers-mask={bitmask(Layers.Default, Layers.TransparentFX)}
-      />
-      <axesHelper scale={512} />
-      <Player />
+      /> */}
+      {/* <Player /> */}
       <Instances />
+
+      {/* Systems */}
+      <EditorSystem />
+      <GLTFSystem />
+      <ScriptSystem />
+      <MeshSystem />
+      <LightSystem />
+      <CameraSystem />
+      <RenderSystem />
+      <ActiveCameraSystem />
+      <ControlledMovementSystem />
+      <GroundSystem />
     </World>
   )
 }
 
 function Devtools() {
   const { physics, performance } = useControls(
-    "debug",
+    "world",
     {
-      physics: false,
-      performance: false
+      debug: folder({
+        physics: false,
+        performance: false
+      })
     },
     {
       collapsed: true
@@ -145,9 +111,9 @@ function Devtools() {
   )
 }
 
-const players = ECS.world.with("player", "sceneObject", "velocity")
+const players = game.world.with("controller", "transform")
 
-function Instances({ count = 500, temp = new Object3D() }) {
+function Instances({ count = 100, temp = new Object3D() }) {
   const ref = useRef<InstancedMesh>(null)
   const heightmap = useHeightmap()
   useEffect(() => {
@@ -203,8 +169,8 @@ function GroundSystem() {
     if (!player || !ref.current || !groundRef.current) return
     ref.current.material.uniforms.time.value = clock.getElapsedTime() * 5
 
-    ref.current.position.x = player.sceneObject.position.x
-    ref.current.position.z = player.sceneObject.position.z
+    ref.current.position.x = player.transform.position.x
+    ref.current.position.z = player.transform.position.z
 
     // if (
     //   groundRef.current.position.z != player.sceneObject.position.z ||
@@ -227,8 +193,8 @@ function GroundSystem() {
     //   // groundRef.current.position.x = player.sceneObject.position.x
     //   // groundRef.current.position.z = player.sceneObject.position.z
     // }
-    ref.current.material.uniforms.posX.value = player.sceneObject.position.x
-    ref.current.material.uniforms.posZ.value = player.sceneObject.position.z
+    ref.current.material.uniforms.posX.value = player.transform.position.x
+    ref.current.material.uniforms.posZ.value = player.transform.position.z
     // groundRef.current.material.uniforms.posX.value =
     // player.sceneObject.position.x
     // groundRef.current.material.uniforms.posZ.value =
@@ -293,53 +259,5 @@ export function useNoiseTexture() {
   noiseTexture.wrapT = RepeatWrapping
   return noiseTexture
 }
-
-function PlayerCamera() {
-  const controls = useControls("camera", {
-    editor: false
-  })
-  return (
-    <ECS.Entity>
-      <ECS.Component name="name" data="AnotherCamera" />
-      <ECS.Component name="camera" data={{}} />
-      {!controls.editor ? <ECS.Component name="active" data={true} /> : null}
-      {/* <ECS.Component name="active" data={Tag} /> */}
-      <ECS.Component name="thirdPerson" data={true} />
-      <ECS.Component name="sceneObject">
-        <PerspectiveCamera rotation-y={-0.8}>
-          <AC.AudioListener />
-        </PerspectiveCamera>
-      </ECS.Component>
-    </ECS.Entity>
-  )
-}
-
-function EditorCamera() {
-  const controls = useControls("camera", {
-    editor: false
-  })
-  return (
-    <ECS.Entity>
-      <ECS.Component name="name" data="EditorCamera" />
-      <ECS.Component name="camera" data={true} />
-      {/* <ECS.Component name="helper" data={Tag} /> */}
-      {controls.editor && <ECS.Component name="active" data={true} />}
-      <ECS.Component name="sceneObject">
-        <PerspectiveCamera position={[100, 100, 100]} />
-      </ECS.Component>
-    </ECS.Entity>
-  )
-}
-
-// function Ground() {
-//   const props = useTexture("/textures/grass.jpeg")
-//   return (
-//     <RigidBody type="fixed" colliders="cuboid">
-//       <Plane scale={100} rotation-x={-Math.PI / 2}>
-//         <meshStandardMaterial map={props} />
-//       </Plane>
-//     </RigidBody>
-//   )
-// }
 
 export default WorldScene

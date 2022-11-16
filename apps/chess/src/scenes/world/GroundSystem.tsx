@@ -12,9 +12,9 @@ import {
   Vector3
 } from "three"
 import { useNoiseTexture } from "./useNoiseTexture"
-import { ECS } from "./gameplay/state"
+import { game } from "./gameplay/state"
 
-export const players = ECS.world.with("player", "sceneObject", "velocity")
+export const players = game.world.with("player", "sceneObject", "velocity")
 
 export function GrassSystem() {
   let ref = useRef<Mesh<InstancedBufferGeometry, RawShaderMaterial>>(null)
@@ -36,7 +36,7 @@ export function GrassSystem() {
     grassMaterial.uniforms.posZ.value = z
   })
 
-  useControls({ 
+  useControls({
     scale: {
       value: 4.0,
       onChange(v: number) {

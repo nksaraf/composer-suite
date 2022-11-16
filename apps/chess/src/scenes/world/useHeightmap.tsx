@@ -25,7 +25,10 @@ export function useHeightmap() {
       return ctx?.getImageData(0, 0, 512, 512)!
     },
     queryKey: ["heightmap"],
-    suspense: true
+    suspense: true,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false
   })
 
   return query.data

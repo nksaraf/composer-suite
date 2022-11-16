@@ -1,14 +1,20 @@
-import { Suspense, useState } from "react";
-import { game } from "../game";
-import { Model } from "../components/Model";
-import { registerComponent } from "./editor";
-import { folder } from "leva";
+import { Suspense, useState } from "react"
+import { Model } from "../components/Model"
+import { registerComponent } from "./editor"
+import { folder } from "leva"
+import { game } from "../../../scenes/world/gameplay/state"
+import { With } from "miniplex"
+import { useGLTF } from "@react-three/drei"
+import { GLTF } from "three-stdlib"
 
 declare global {
   export interface Components {
     gltf?: {
-      url: string;
-    };
+      url: string
+    }
+    gltf$: {
+      setUrl: (url: string) => void
+    }
   }
 }
 
@@ -19,28 +25,28 @@ registerComponent("gltf", {
       gltf: folder(
         {
           url: {
-            value: entity.gltf.url,
+            value: entity.gltf?.url,
             onChange: (value) => {
-              entity.gltf.url = value;
-              entity.gltf$.setUrl(value);
+              entity.gltf.url = value
+              entity.gltf$.setUrl(value)
             },
-            transient: true,
-          },
+            transient: true
+          }
         },
         {
-          collapsed: true,
+          collapsed: true
         }
-      ),
-    };
-  },
-});
+      )
+    }
+  }
+})
 
-const gltfs = game.world.with("gltf");
+const gltfs = game.world.with("gltf")
 
-function Gltf({ entity }) {
-  const [url, setUrl] = useState(entity.gltf.url);
-  entity.gltf$ = { setUrl };
-  return <Model url={url} />;
+function Gltf({ entity }: { entity: With<Components, "gltf"> }) {
+  const [url, setUrl] = useState(entity.gltf.url)
+  entity.gltf$ = { setUrl }
+  return <Model url={url} />
 }
 export function GLTFSystem() {
   return (
@@ -53,5 +59,5 @@ export function GLTFSystem() {
         </game.Entity>
       )}
     </game.Entities>
-  );
+  )
 }

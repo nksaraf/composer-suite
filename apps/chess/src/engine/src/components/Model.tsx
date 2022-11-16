@@ -1,24 +1,30 @@
-import { useGLTF } from "@react-three/drei";
-import { game } from "../game";
-import { store } from "../systems/editor";
+import { useGLTF } from "@react-three/drei"
+import { useLayoutEffect } from "react"
+import { game } from "../../../scenes/world/gameplay/state"
+import { store } from "../systems/editor"
 
-export function Model({ url, ...props }) {
-  const entity = game.useCurrentEntity();
-  const { scene } = useGLTF(url);
+export function Model({ url, ...props }: { url: string }) {
+  const entity = game.useCurrentEntity()!
+  const { scene } = useGLTF(url)
+
+  useLayoutEffect(() => {
+    entity.mesh$ = scene
+  }, [entity, scene])
   return (
     <game.Component name="mesh$">
       <primitive
         object={scene}
+        key={scene}
         onClick={(e) => {
-          e.stopPropagation();
+          e.stopPropagation()
           store.set(({ entities: selectedEntities }) => {
             if (e.shiftKey) {
-              return { entities: [...selectedEntities, entity] };
+              return { entities: [...selectedEntities, entity] }
             }
-            return { entities: [entity] };
-          });
+            return { entities: [entity] }
+          })
         }}
       />
     </game.Component>
-  );
+  )
 }

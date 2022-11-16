@@ -7,10 +7,9 @@ import "@react-three/fiber"
 import { Game } from "./Game"
 import { Sidebar } from "./editor/Sidebar"
 import { useState } from "react"
+import { EditorPanels } from "./editor/EditorPanels"
 
 export const App = () => {
-  const [editorEnabled, setEditorEnabled] = useState(false)
-
   return (
     <StartScreen>
       <UI.Root>
@@ -19,14 +18,7 @@ export const App = () => {
             <Game />
           </div>
 
-          {editorEnabled && (
-            <>
-              <UI.HorizontalResizer />
-              <UI.VerticalGroup css={{ flex: "1 1 auto" }}>
-                <Sidebar />
-              </UI.VerticalGroup>
-            </>
-          )}
+          <EditorPanels />
         </UI.HorizontalGroup>
       </UI.Root>
     </StartScreen>
