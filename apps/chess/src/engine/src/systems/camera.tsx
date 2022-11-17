@@ -284,14 +284,24 @@ function useCameraPreview(
   entity: With<Components, "camera$">,
   canvasRef: React.MutableRefObject<HTMLCanvasElement | null>
 ) {
+  const rootRef = useRef()
   useLayoutEffect(() => {
-    if (canvasRef.current) {
-      let root = createRoot(canvasRef.current)
-      root.render(<CameraPreview scene={scene} camera={entity.camera$} />)
-      return () => {
-        if (canvasRef.current) {
-          root.unmount()
-        }
+    if (canvasRef.current && entity.camera$ && scene && !rootRef.current) {
+      console.log(
+        "calling root",
+        canvasRef.current,
+        entity.camera$,
+        scene,
+        !rootRef.current
+      )
+      rootRef.current = createRoot(canvasRef.current)
+      rootRef.current.render(
+        <CameraPreview scene={scene} camera={entity.camera$} />
+      )
+    }
+    return () => {
+      if (canvasRef.current) {
+        // rootRef.current.unmount()
       }
     }
   }, [scene, entity, canvasRef])

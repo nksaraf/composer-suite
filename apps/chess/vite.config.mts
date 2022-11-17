@@ -62,14 +62,18 @@ export default defineConfig({
         ) {
           const { name, scene } = await event.request.json()
           console.log("saving", name, scene)
-          fs.writeFileSync(name, scene)
+          fs.writeFileSync("assets/" + name, scene)
+          return new Response("ok")
         }
         if (
           event.request.method === "GET" &&
           url.pathname.startsWith("/__editor/scene")
         ) {
           const scene = fs.readFileSync(
-            resolve(config.root, "scenes" + url.pathname.replace("/scene", "")),
+            resolve(
+              config.root,
+              "scenes" + url.pathname.replace("/scene", "assets")
+            ),
             "utf-8"
           )
           return new Response(scene, {

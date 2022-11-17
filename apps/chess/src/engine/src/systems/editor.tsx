@@ -183,13 +183,18 @@ function EntityTransformControls({
 }): JSX.Element {
   let ref = useRef<TransformControlsImpl>(null)
   useEffect(() => {
-    ref.current.layers.mask = bitmask(1)
-    ref.current.raycaster.layers.mask = bitmask(1)
-    ref.current.camera.layers.mask = bitmask(1)
-    ref.current.traverse((o) => {
-      o.layers.mask = bitmask(1)
-    })
-    function keyDown(event) {
+    if (ref.current) {
+      ref.current.layers.mask = bitmask(1)
+      // @ts-expect-error
+      ref.current.raycaster.layers.mask = bitmask(1)
+      // @ts-expect-error
+      ref.current.camera.layers.mask = bitmask(1)
+      ref.current.traverse((o) => {
+        o.layers.mask = bitmask(1)
+      })
+    }
+
+    function keyDown(event: KeyboardEvent) {
       let control = ref.current
       if (!control) return
       switch (event.keyCode) {
@@ -245,6 +250,9 @@ function EntityTransformControls({
     window.addEventListener("keydown", keyDown)
     let keyUp = function (event) {
       let control = ref.current
+      if (!control) {
+        return
+      }
       switch (event.keyCode) {
         case 16: // Shift
           control.setTranslationSnap(null)
@@ -265,10 +273,10 @@ function EntityTransformControls({
       <game.Component name="transformControls$">
         <TransformControls
           ref={ref}
-          key={entity}
+          key={entity as any}
           {...entity.transform}
           onChange={(c) => {
-            if (c?.type === "change" && c.target.object) {
+            if (c?.type === "change" && c.target.object && entity.transform) {
               entity.transform.position
                 ? entity.transform.position.copy(c.target.object.position)
                 : (entity.transform.position = c.target.object.position)
@@ -290,7 +298,11 @@ export function registerComponent<T extends keyof Components>(
   name: T,
   comp: {
     addTo(entity: Components): void
-    controls(entity: With<Components, T>, reset: () => void): any
+    controls(
+      entity: With<Components, T>,
+      reset: () => void,
+      scene: THREE.Scene
+    ): any
   }
 ) {
   // @ts-expect-error
@@ -309,7 +321,7 @@ function EntityControls({ entity }: { entity: Components }) {
         controls = {
           ...controls,
           ...(componentLibrary[key]?.controls?.(
-            entity,
+            entity as any,
             () => setRun((r) => r + 1),
             scene
           ) ?? {})
@@ -333,8 +345,10 @@ function EntityControls({ entity }: { entity: Components }) {
           // "add component": button(),
           ...controls,
           newComponent: selectButton({
-            options: Object.keys(componentLibrary).filter((e) => !entity[e]),
-            onClick: (get) => {
+            options: Object.keys(componentLibrary).filter(
+              (e) => !entity[e as keyof Components]
+            ),
+            onClick: (get: any) => {
               let componentType = get(name + ".newComponent")
               componentLibrary[componentType]?.addTo(entity)
               setRun((r) => r + 1)

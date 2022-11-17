@@ -31,7 +31,6 @@ export function serialize(game: ReturnType<typeof create>) {
 
             if (
               typeof entity[key as keyof Components] === "object" &&
-              // @ts-expect-error
               entity[key as keyof Components]?.toJSON
             ) {
               // @ts-expect-error
