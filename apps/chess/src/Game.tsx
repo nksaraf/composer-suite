@@ -6,10 +6,10 @@ import * as RC from "render-composer"
 import { PostProcessing } from "./common/PostProcessing"
 import { Stage } from "./configuration"
 import { controller } from "./input"
-import { GameState } from "./state"
-const MenuScene = lazy(() => import("./scenes/menu/MenuScene"))
-const WorldScene = lazy(() => import("./scenes/world/WorldScene"))
-
+import { World } from "./scenes/world/World"
+import Scene from "./scenes/world/WorldScene"
+import { game } from "./engine/src/state"
+game
 const Controller = () => {
   useFrame(() => {
     controller.update()
@@ -31,19 +31,11 @@ export const Game = () => {
               <AC.Reverb seconds={2} decay={5}>
                 <PostProcessing />
                 <Suspense>
-                  <GameState.Match state="menu">
-                    <Suspense>
-                      <MenuScene />
-                    </Suspense>
-                  </GameState.Match>
-
-                  <GameState.Match state="world">
-                    <Suspense>
-                      <WorldScene />
-                    </Suspense>
-                  </GameState.Match>
-
-                  {/* <Perf matrixUpdate /> */}
+                  <Suspense>
+                    <World>
+                      <Scene />
+                    </World>
+                  </Suspense>
                 </Suspense>
               </AC.Reverb>
             </AC.Compressor>

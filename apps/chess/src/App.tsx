@@ -5,8 +5,6 @@ import { StartScreen } from "./lib/StartScreen"
 because otherwise Vite gets confused. :( */
 import "@react-three/fiber"
 import { Game } from "./Game"
-import { Sidebar } from "./editor/Sidebar"
-import { useState } from "react"
 import { EditorPanels } from "./editor/EditorPanels"
 
 export const App = () => {
@@ -14,10 +12,7 @@ export const App = () => {
     <StartScreen>
       <UI.Root>
         <UI.HorizontalGroup>
-          <div style={{ flex: 4 }}>
-            <Game />
-          </div>
-
+          <Game />
           <EditorPanels />
         </UI.HorizontalGroup>
       </UI.Root>

@@ -1,5 +1,11 @@
 import { Html, Sphere } from "@react-three/drei"
-import { CameraHelper, PerspectiveCamera, Vector3 } from "three"
+import {
+  CameraHelper,
+  OrthographicCamera,
+  PerspectiveCamera,
+  Scene,
+  Vector3
+} from "three"
 import { Helper } from "../lib/Helper"
 import { registerComponent, selectEntity, store } from "./editor"
 
@@ -18,6 +24,7 @@ import { game } from "../state"
 import { Stage } from "../../../configuration"
 import { bitmask } from "render-composer"
 import { createPlugin, useInputContext } from "leva/plugin"
+import { With } from "miniplex"
 
 declare global {
   export interface Components {
@@ -31,12 +38,12 @@ declare global {
   }
 }
 
-export const cameras = game.world.with("camera")
-export const activeCameras = game.world.with("camera$", "transform", "active")
-export const cameraObjects = game.world.with("camera$", "transform")
-export const cameraTargets = game.world.with("cameraTarget", "transform")
+const cameras = game.world.with("camera")
+const activeCameras = game.world.with("camera$", "transform", "active")
+const cameraObjects = game.world.with("camera$", "transform")
+const cameraTargets = game.world.with("cameraTarget", "transform")
 
-export default function CameraSystem() {
+export function CameraSystem() {
   const { editor } = useStore(store)
   useFrame(() => {
     for (var entity of cameraObjects) {
@@ -260,7 +267,10 @@ registerComponent("camera", {
   }
 })
 
-function Comp(props) {
+function CameraPreview(props: {
+  scene: Scene
+  camera: PerspectiveCamera | OrthographicCamera
+}) {
   const set = useThree((state) => state.set)
   set({
     scene: props.scene,
@@ -269,11 +279,21 @@ function Comp(props) {
   return <></>
 }
 
-function useCameraPreview(scene, entity, canvasRef) {
+function useCameraPreview(
+  scene: Scene,
+  entity: With<Components, "camera$">,
+  canvasRef: React.MutableRefObject<HTMLCanvasElement | null>
+) {
   useLayoutEffect(() => {
-    createRoot(canvasRef.current).render(
-      <Comp scene={scene} camera={entity.camera$} />
-    )
+    if (canvasRef.current) {
+      let root = createRoot(canvasRef.current)
+      root.render(<CameraPreview scene={scene} camera={entity.camera$} />)
+      return () => {
+        if (canvasRef.current) {
+          root.unmount()
+        }
+      }
+    }
   }, [scene, entity, canvasRef])
 }
 

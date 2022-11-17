@@ -50,7 +50,7 @@ export function useKeyboardShortcuts() {
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
-            name: "playground/scenes/home.json",
+            name: "scenes/home.json",
             scene: message
           })
         })

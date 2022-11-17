@@ -8,7 +8,7 @@ import {
   Float32BufferAttribute
 } from "three"
 import { width, resolution } from "./grass"
-import { useNoiseTexture } from "./WorldScene"
+import { useNoiseTexture } from "./ground"
 
 export function useHeightmap() {
   const texture = useNoiseTexture()
