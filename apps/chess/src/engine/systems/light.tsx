@@ -4,8 +4,9 @@ import { Helper } from "../lib/Helper"
 import { selectEntity, store } from "./editor"
 import { useStore } from "statery"
 import { DirectionalLightProps, useFrame } from "@react-three/fiber"
-import { game, Layers } from "../state"
+import { game, Layers } from "../game"
 import { bitmask } from "render-composer"
+
 export const directionalLights = game.world.with("directionalLight")
 export const directionalLightObjects = game.world.with(
   "directionalLight$",

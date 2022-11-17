@@ -19,7 +19,7 @@ import {
 var joints = 4
 var bladeWidth = 0.12
 var bladeHeight = 0.5
-var instances = 200000
+var instances = 500000
 //Patch side lengtwh
 export var width = 512
 //Number of vertices on ground plane side

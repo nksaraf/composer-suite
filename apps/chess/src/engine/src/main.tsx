@@ -1,7 +1,7 @@
 import { Environment } from "@react-three/drei"
 import { useControls } from "leva"
 import { ComponentProps, Suspense } from "react"
-import GrassSystem from "./systems/grass"
+import GrassSystem from "../systems/grass"
 
 export function Scene() {
   const { background, environment } = useControls(

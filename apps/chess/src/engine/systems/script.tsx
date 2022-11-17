@@ -1,5 +1,5 @@
 import { lazy, Suspense, useMemo } from "react"
-import { game } from "../state"
+import { game } from "../game"
 
 let map = {}
 function ScriptedEntity({ entity }) {

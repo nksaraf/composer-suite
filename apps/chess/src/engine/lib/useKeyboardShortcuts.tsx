@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react"
-import { serialize } from "../../world"
+import { serialize } from "../world"
 import { store } from "../systems/editor"
 
 import { useLayoutEffect, useMemo } from "react"
 import { useStore } from "statery"
-import { game } from "../state"
+import { game } from "../game"
 
 export const useKeyboard = ({ onKeyDown = null, onKeyUp = null } = {}) => {
   const keys = useMemo(() => new Set<string>(), [])

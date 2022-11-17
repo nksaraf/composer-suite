@@ -3,7 +3,7 @@ import { MeshProps } from "@react-three/fiber"
 import React, { forwardRef, useLayoutEffect, useRef } from "react"
 import mergeRefs from "react-merge-refs"
 import { Mesh } from "three"
-import { game } from "../state"
+import { game } from "../game"
 import { store } from "../systems/editor"
 
 export const MeshComponent = forwardRef<

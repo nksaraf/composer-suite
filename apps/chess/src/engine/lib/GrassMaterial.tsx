@@ -1,4 +1,4 @@
-import { forwardRef, useMemo, useRef } from "react";
+import { forwardRef, useMemo, useRef } from "react"
 import {
   DoubleSide,
   InstancedBufferAttribute,
@@ -12,122 +12,110 @@ import {
   Texture,
   TextureLoader,
   Vector2,
-  Vector3,
-} from "three";
+  Vector3
+} from "three"
 //Define the material, specifying attributes, uniforms, shaders etc.
-import { useTexture } from "@react-three/drei";
-import { useFrame } from "@react-three/fiber";
-import { mergeRefs } from "react-merge-refs";
-
-export function useNoiseTexture() {
-  let noiseTexture = useTexture(
-    // "/noise.jpg"
-    "https://al-ro.github.io/images/grass/perlinFbm.jpg"
-  );
-
-  console.log(noiseTexture);
-  noiseTexture.wrapS = RepeatWrapping;
-  noiseTexture.wrapT = RepeatWrapping;
-  return noiseTexture;
-}
+import { useFrame } from "@react-three/fiber"
+import mergeRefs from "react-merge-refs"
+import { useNoiseTexture } from "../../lib/useNoiseTexture"
 
 //Variables for blade mesh
-var joints = 4;
+var joints = 4
 // var bladeHeight = 0.5;
 // var instances = 50000;
 //Patch side lengtwh
 // export var width = 50;
 //Number of vertices on ground plane side
-export var resolution = 512;
+export var resolution = 512
 //Distance between two ground plane vertices
-export var delta = 1;
+export var delta = 1
 //User movement speed
-var speed = 3;
+var speed = 3
 
 //Sun
 //Height over horizon in range [0, PI/2.0]
-export var elevation = 0.2;
+export var elevation = 0.2
 //Rotation around Y axis in range [0, 2*PI]
-export var azimuth = 0.4;
+export var azimuth = 0.4
 
-var fogFade = 0.005;
+var fogFade = 0.005
 
 //Lighting variables for grass
-export var ambientStrength = 0.7;
-export var translucencyStrength = 1.5;
-export var specularStrength = 0.5;
-export var diffuseStrength = 1.5;
-export var shininess = 256;
-export var sunColour = new Vector3(1.0, 1.0, 1.0);
-export var specularColour = new Vector3(1.0, 1.0, 1.0);
+export var ambientStrength = 0.7
+export var translucencyStrength = 1.5
+export var specularStrength = 0.5
+export var diffuseStrength = 1.5
+export var shininess = 256
+export var sunColour = new Vector3(1.0, 1.0, 1.0)
+export var specularColour = new Vector3(1.0, 1.0, 1.0)
 
 //The global coordinates
 //The geometry never leaves a box of width*width around (0, 0)
 //But we track where in space the camera would be globally
-export var pos = new Vector2(0.1, 0.1);
-var loader = new TextureLoader();
-loader.crossOrigin = "";
+export var pos = new Vector2(0.1, 0.1)
+var loader = new TextureLoader()
+loader.crossOrigin = ""
 export var grassTexture = loader.load(
   "https://al-ro.github.io/images/grass/blade_diffuse.jpg"
-);
+)
 export var alphaMap = loader.load(
   "https://al-ro.github.io/images/grass/blade_alpha.jpg"
-);
+)
 export function createGrassGeometry({
   width,
   count: instances,
   bladeHeight = 0.5,
-  bladeWidth = 0.12,
+  bladeWidth = 0.12
 }) {
   //Define base geometry that will be instanced. We use a plane for an individual blade of grass
-  var grassBaseGeometry = new PlaneGeometry(bladeWidth, bladeHeight, 1, joints);
-  grassBaseGeometry.translate(0, bladeHeight / 2, 0);
+  var grassBaseGeometry = new PlaneGeometry(bladeWidth, bladeHeight, 1, joints)
+  grassBaseGeometry.translate(0, bladeHeight / 2, 0)
   //Get alpha map and blade texture
   //These have been taken from "Realistic real-time grass rendering" by Eddie Lee, 2010
 
   //Define the bend of the grass blade as the combination of three quaternion rotations
-  let vertex = new Vector3();
-  let quaternion0 = new Quaternion();
-  let quaternion1 = new Quaternion();
-  let x, y, z, w, angle, sinAngle, rotationAngle;
+  let vertex = new Vector3()
+  let quaternion0 = new Quaternion()
+  let quaternion1 = new Quaternion()
+  let x, y, z, w, angle, sinAngle, rotationAngle
 
   //Rotate around Y
-  angle = 0.05;
-  sinAngle = Math.sin(angle / 2.0);
-  rotationAngle = new Vector3(0, 1, 0);
-  x = rotationAngle.x * sinAngle;
-  y = rotationAngle.y * sinAngle;
-  z = rotationAngle.z * sinAngle;
-  w = Math.cos(angle / 2.0);
-  quaternion0.set(x, y, z, w);
+  angle = 0.05
+  sinAngle = Math.sin(angle / 2.0)
+  rotationAngle = new Vector3(0, 1, 0)
+  x = rotationAngle.x * sinAngle
+  y = rotationAngle.y * sinAngle
+  z = rotationAngle.z * sinAngle
+  w = Math.cos(angle / 2.0)
+  quaternion0.set(x, y, z, w)
 
   //Rotate around X
-  angle = 0.3;
-  sinAngle = Math.sin(angle / 2.0);
-  rotationAngle.set(1, 0, 0);
-  x = rotationAngle.x * sinAngle;
-  y = rotationAngle.y * sinAngle;
-  z = rotationAngle.z * sinAngle;
-  w = Math.cos(angle / 2.0);
-  quaternion1.set(x, y, z, w);
+  angle = 0.3
+  sinAngle = Math.sin(angle / 2.0)
+  rotationAngle.set(1, 0, 0)
+  x = rotationAngle.x * sinAngle
+  y = rotationAngle.y * sinAngle
+  z = rotationAngle.z * sinAngle
+  w = Math.cos(angle / 2.0)
+  quaternion1.set(x, y, z, w)
 
   //Combine rotations to a single quaternion
-  quaternion0.multiply(quaternion1);
+  quaternion0.multiply(quaternion1)
 
   //Rotate around Z
-  angle = 0.1;
-  sinAngle = Math.sin(angle / 2.0);
-  rotationAngle.set(0, 0, 1);
-  x = rotationAngle.x * sinAngle;
-  y = rotationAngle.y * sinAngle;
-  z = rotationAngle.z * sinAngle;
-  w = Math.cos(angle / 2.0);
-  quaternion1.set(x, y, z, w);
+  angle = 0.1
+  sinAngle = Math.sin(angle / 2.0)
+  rotationAngle.set(0, 0, 1)
+  x = rotationAngle.x * sinAngle
+  y = rotationAngle.y * sinAngle
+  z = rotationAngle.z * sinAngle
+  w = Math.cos(angle / 2.0)
+  quaternion1.set(x, y, z, w)
 
   //Combine rotations to a single quaternion
-  quaternion0.multiply(quaternion1);
+  quaternion0.multiply(quaternion1)
 
-  let quaternion2 = new Quaternion();
+  let quaternion2 = new Quaternion()
 
   //Bend grass base geometry for more organic look
   for (
@@ -135,76 +123,76 @@ export function createGrassGeometry({
     v < grassBaseGeometry.attributes.position.array.length;
     v += 3
   ) {
-    quaternion2.setFromAxisAngle(new Vector3(0, 1, 0), Math.PI / 2);
-    vertex.x = grassBaseGeometry.attributes.position.array[v];
-    vertex.y = grassBaseGeometry.attributes.position.array[v + 1];
-    vertex.z = grassBaseGeometry.attributes.position.array[v + 2];
-    let frac = vertex.y / bladeHeight;
-    quaternion2.slerp(quaternion0, frac);
-    vertex.applyQuaternion(quaternion2);
-    grassBaseGeometry.attributes.position.array[v] = vertex.x;
-    grassBaseGeometry.attributes.position.array[v + 1] = vertex.y;
-    grassBaseGeometry.attributes.position.array[v + 2] = vertex.z;
+    quaternion2.setFromAxisAngle(new Vector3(0, 1, 0), Math.PI / 2)
+    vertex.x = grassBaseGeometry.attributes.position.array[v]
+    vertex.y = grassBaseGeometry.attributes.position.array[v + 1]
+    vertex.z = grassBaseGeometry.attributes.position.array[v + 2]
+    let frac = vertex.y / bladeHeight
+    quaternion2.slerp(quaternion0, frac)
+    vertex.applyQuaternion(quaternion2)
+    grassBaseGeometry.attributes.position.array[v] = vertex.x
+    grassBaseGeometry.attributes.position.array[v + 1] = vertex.y
+    grassBaseGeometry.attributes.position.array[v + 2] = vertex.z
   }
 
-  grassBaseGeometry.computeVertexNormals();
+  grassBaseGeometry.computeVertexNormals()
 
-  var instancedGeometry = new InstancedBufferGeometry();
+  var instancedGeometry = new InstancedBufferGeometry()
 
-  instancedGeometry.index = grassBaseGeometry.index;
-  instancedGeometry.attributes.position = grassBaseGeometry.attributes.position;
-  instancedGeometry.attributes.uv = grassBaseGeometry.attributes.uv;
-  instancedGeometry.attributes.normal = grassBaseGeometry.attributes.normal;
+  instancedGeometry.index = grassBaseGeometry.index
+  instancedGeometry.attributes.position = grassBaseGeometry.attributes.position
+  instancedGeometry.attributes.uv = grassBaseGeometry.attributes.uv
+  instancedGeometry.attributes.normal = grassBaseGeometry.attributes.normal
 
   // Each instance has its own data for position, orientation and scale
-  var indices = [];
-  var offsets = [];
-  var size = [];
-  var halfRootAngles = [];
+  var indices = []
+  var offsets = []
+  var size = []
+  var halfRootAngles = []
 
   //For each instance of the grass blade
   for (let i = 0; i < instances; i++) {
-    indices.push(i / instances);
+    indices.push(i / instances)
 
     //Offset of the roots
-    x = Math.random() * width - width / 2;
-    z = Math.random() * width - width / 2;
-    y = 0;
-    offsets.push(x, y, z);
+    x = Math.random() * width - width / 2
+    z = Math.random() * width - width / 2
+    y = 0
+    offsets.push(x, y, z)
 
     //Random orientation
-    let angle = Math.PI - Math.random() * (2 * Math.PI);
-    halfRootAngles.push(Math.sin(0.5 * angle), Math.cos(0.5 * angle));
+    let angle = Math.PI - Math.random() * (2 * Math.PI)
+    halfRootAngles.push(Math.sin(0.5 * angle), Math.cos(0.5 * angle))
 
     //Define variety in height
     if (i % 3 != 0) {
-      size.push(2.0 + Math.random() * 1.25);
+      size.push(2.0 + Math.random() * 1.25)
     } else {
-      size.push(2.0 + Math.random());
+      size.push(2.0 + Math.random())
     }
   }
-  console.log(offsets);
+  console.log(offsets)
 
   var offsetAttribute = new InstancedBufferAttribute(
     new Float32Array(offsets),
     3
-  );
-  var sizeAttribute = new InstancedBufferAttribute(new Float32Array(size), 1);
+  )
+  var sizeAttribute = new InstancedBufferAttribute(new Float32Array(size), 1)
   var halfRootAngleAttribute = new InstancedBufferAttribute(
     new Float32Array(halfRootAngles),
     2
-  );
+  )
   var indexAttribute = new InstancedBufferAttribute(
     new Float32Array(indices),
     1
-  );
+  )
 
-  instancedGeometry.setAttribute("offset", offsetAttribute);
-  instancedGeometry.setAttribute("size", sizeAttribute);
-  instancedGeometry.setAttribute("halfRootAngle", halfRootAngleAttribute);
-  instancedGeometry.setAttribute("index", indexAttribute);
+  instancedGeometry.setAttribute("offset", offsetAttribute)
+  instancedGeometry.setAttribute("size", sizeAttribute)
+  instancedGeometry.setAttribute("halfRootAngle", halfRootAngleAttribute)
+  instancedGeometry.setAttribute("index", indexAttribute)
 
-  return instancedGeometry;
+  return instancedGeometry
 }
 
 export var sharedPrefix = /*glsl*/ `
@@ -215,7 +203,7 @@ export var sharedPrefix = /*glsl*/ `
      return 50.0 * (2.0 * texture2D(heightMap, p/512.0).r - 1.0);
      //return p.b;
   }
-`;
+`
 
 var grassVertexSource = /*glsl*/ `
   ${sharedPrefix}
@@ -324,7 +312,7 @@ var grassVertexSource = /*glsl*/ `
   
     gl_Position = projectionMatrix * modelViewMatrix * vec4(vPosition, 1.0);
   }  
-`;
+`
 
 var grassFragmentSource = /*glsl*/ `
   precision mediump float;
@@ -430,7 +418,7 @@ var grassFragmentSource = /*glsl*/ `
   
     gl_FragColor = vec4(col, 1.0);
   }
-`;
+`
 
 // export var grassMaterial = new RawShaderMaterial({
 //   uniforms: {
@@ -466,13 +454,13 @@ var grassFragmentSource = /*glsl*/ `
 export const Grass = forwardRef<
   Mesh,
   {
-    scale?: number;
-    offset?: [number, number];
-    noiseTexture?: Texture;
-    bladeHeight?: number;
-    bladeWidth?: number;
-    width?: number;
-    count?: number;
+    scale?: number
+    offset?: [number, number]
+    noiseTexture?: Texture
+    bladeHeight?: number
+    bladeWidth?: number
+    width?: number
+    count?: number
   }
 >(
   (
@@ -488,21 +476,21 @@ export const Grass = forwardRef<
     },
     ref
   ) => {
-    const defaultNoiseTexture = useNoiseTexture();
-    const materialRef = useRef<RawShaderMaterial>(null);
-    const meshRef = useRef<Mesh>(null);
+    const defaultNoiseTexture = useNoiseTexture()
+    const materialRef = useRef<RawShaderMaterial>(null)
+    const meshRef = useRef<Mesh>(null)
     const geom = useMemo(() => {
-      return createGrassGeometry({ width, count, bladeHeight, bladeWidth });
-    }, [width, count, bladeHeight, bladeWidth]);
+      return createGrassGeometry({ width, count, bladeHeight, bladeWidth })
+    }, [width, count, bladeHeight, bladeWidth])
     useFrame(({ clock }) => {
       if (materialRef.current)
-        materialRef.current.uniforms.time.value = clock.getElapsedTime() * 5;
+        materialRef.current.uniforms.time.value = clock.getElapsedTime() * 5
 
       if (meshRef.current) {
-        materialRef.current.uniforms.posX.value = meshRef.current.position.x;
-        materialRef.current.uniforms.posZ.value = meshRef.current.position.z;
+        materialRef.current.uniforms.posX.value = meshRef.current.position.x
+        materialRef.current.uniforms.posZ.value = meshRef.current.position.z
       }
-    });
+    })
     return (
       <mesh
         ref={mergeRefs([ref, meshRef])}
@@ -529,7 +517,7 @@ export const Grass = forwardRef<
                 Math.sin(azimuth),
                 Math.sin(elevation),
                 -Math.cos(azimuth)
-              ),
+              )
             },
             cameraPosition: { value: new Vector3(0, 0, 0) },
             ambientStrength: { value: ambientStrength },
@@ -539,7 +527,7 @@ export const Grass = forwardRef<
             shininess: { value: shininess },
             lightColour: { value: sunColour },
             specularColour: { value: specularColour },
-            scale: { value: scale },
+            scale: { value: scale }
           }}
           vertexShader={grassVertexSource}
           fragmentShader={grassFragmentSource}
@@ -547,6 +535,6 @@ export const Grass = forwardRef<
           ref={materialRef}
         />
       </mesh>
-    );
+    )
   }
-);
+)

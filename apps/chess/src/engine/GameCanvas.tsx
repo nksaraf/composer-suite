@@ -28,7 +28,7 @@ export const World = ({ children }: React.PropsWithChildren<{}>) => {
 }
 
 const Controller = () => {
-  useFrame(() => {
+  useFrame(function updateController() {
     controller.update()
   }, Stage.Early)
 

@@ -5,8 +5,8 @@ import { useRef } from "react"
 import { useStore } from "statery"
 import { Vector3, Quaternion } from "three"
 import { lerp } from "three/src/math/MathUtils"
-import { controller } from "../../../input"
-import { game } from "../state"
+import { controller } from "../../input"
+import { game } from "../game"
 import { store } from "./editor"
 
 declare global {

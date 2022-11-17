@@ -1,6 +1,6 @@
 import { Html, useTexture } from "@react-three/drei"
 import { Grass, resolution, width } from "./grass"
-import { game } from "vinxi/src/state"
+import { game } from "vinxi/game"
 import { useTreeModel } from "../../models/Tree"
 import { useFrame } from "@react-three/fiber"
 import { useEffect, useMemo, useRef } from "react"
@@ -15,6 +15,7 @@ import {
   Vector3
 } from "three"
 import { getYPosition, useHeightmap } from "../useHeightmap"
+import { useNoiseTexture } from "../useNoiseTexture"
 
 const players = game.world.with("controller", "transform")
 export function Instances({ count = 100, temp = new Object3D() }) {
@@ -28,7 +29,7 @@ export function Instances({ count = 100, temp = new Object3D() }) {
       let y = Math.random() * 500 - 512 / 2
       temp.position.set(
         x,
-        getYPosition(heightmap!, x, y, 5, [512 / 2, 512 / 2]),
+        getYPosition(heightmap!, x, y, 2.0, [512 / 2, 512 / 2]),
         y
       )
       temp.updateMatrix()
@@ -54,13 +55,13 @@ export function GroundSystem() {
   let noiseTexture = useNoiseTexture()
   let heightmap = useHeightmap()
   const groundGeometry = useMemo(() => {
-    const geom = new PlaneGeometry(width, width, resolution / 8, resolution / 8)
+    const geom = new PlaneGeometry(width, width, resolution, resolution)
     geom.lookAt(new Vector3(0, 1, 0))
     let attr = geom.getAttribute("position")
     for (var i = 0; i < attr.count; i++) {
       attr.setY(
         i,
-        getYPosition(heightmap!, attr.getX(i), attr.getZ(i), 5.0, [
+        getYPosition(heightmap!, attr.getX(i), attr.getZ(i), 2.0, [
           512 / 2,
           512 / 2
         ])
@@ -136,7 +137,7 @@ export function GroundSystem() {
         offset={[512 / 2, 512 / 2]}
         ref={ref}
         noiseTexture={noiseTexture}
-        scale={5.0}
+        scale={2.0}
       />
       <mesh ref={groundRef} geometry={groundGeometry} receiveShadow>
         {/* <GroundMaterial
@@ -150,16 +151,4 @@ export function GroundSystem() {
       </mesh>
     </>
   )
-}
-
-export function useNoiseTexture() {
-  let noiseTexture = useTexture(
-    // "/noise.jpg"
-    "https://al-ro.github.io/images/grass/perlinFbm.jpg"
-  )
-
-  console.log(noiseTexture)
-  noiseTexture.wrapS = RepeatWrapping
-  noiseTexture.wrapT = RepeatWrapping
-  return noiseTexture
 }

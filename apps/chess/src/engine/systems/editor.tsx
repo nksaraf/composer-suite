@@ -16,11 +16,11 @@ import { useEffect, useRef, useState } from "react"
 import { usePersistedControls } from "../lib/usePersistedControls"
 
 import { selectButton } from "../lib/selectButton"
-import { game } from "../state"
+import { game } from "../game"
 import { With } from "miniplex"
 import { bitmask, Layers } from "render-composer"
-import { SidebarTunnel } from "../../state"
-import { EditorPanels } from "../../editor/EditorPanels"
+import { SidebarTunnel } from "../state"
+import { EditorPanels } from "../editor/EditorPanels"
 
 declare global {
   export interface Components {

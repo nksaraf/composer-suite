@@ -13,6 +13,7 @@ import { useEntities } from "miniplex/react"
 import {
   createRoot,
   PerspectiveCameraProps,
+  ReconcilerRoot,
   useFrame,
   useThree
 } from "@react-three/fiber"
@@ -20,8 +21,8 @@ import { useLayoutEffect, useRef } from "react"
 import { useStore } from "statery"
 import { folder } from "leva"
 import { usePersistedControls } from "../lib/usePersistedControls"
-import { game } from "../state"
-import { Stage } from "../../configuration"
+import { game } from "../game"
+import { Stage } from "../configuration"
 import { bitmask } from "render-composer"
 import { createPlugin, useInputContext } from "leva/plugin"
 import { With } from "miniplex"
@@ -284,16 +285,9 @@ function useCameraPreview(
   entity: With<Components, "camera$">,
   canvasRef: React.MutableRefObject<HTMLCanvasElement | null>
 ) {
-  const rootRef = useRef()
+  const rootRef = useRef<ReconcilerRoot<HTMLCanvasElement>>()
   useLayoutEffect(() => {
     if (canvasRef.current && entity.camera$ && scene && !rootRef.current) {
-      console.log(
-        "calling root",
-        canvasRef.current,
-        entity.camera$,
-        scene,
-        !rootRef.current
-      )
       rootRef.current = createRoot(canvasRef.current)
       rootRef.current.render(
         <CameraPreview scene={scene} camera={entity.camera$} />

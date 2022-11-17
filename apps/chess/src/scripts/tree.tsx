@@ -1,5 +1,4 @@
-import { Suspense } from "react"
-import { Model } from "../engine/src/systems/gltf"
+import { Model } from "vinxi/systems/gltf"
 
 const MODELS = {
   Beech:

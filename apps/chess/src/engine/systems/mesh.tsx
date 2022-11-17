@@ -5,7 +5,7 @@ import { Mesh } from "three"
 import { MeshComponent } from "../lib/MeshComponent"
 import { folder, LevaInputs } from "leva"
 import { useFrame } from "@react-three/fiber"
-import { game } from "../state"
+import { game } from "../game"
 
 export const meshes = game.world.with("mesh").without("physics")
 export const meshObjects = game.world

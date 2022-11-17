@@ -1,7 +1,7 @@
 import { Suspense, useState } from "react"
 import { registerComponent } from "./editor"
 import { folder } from "leva"
-import { game } from "../state"
+import { game } from "../game"
 import { With } from "miniplex"
 import { useGLTF } from "@react-three/drei"
 import { useLayoutEffect } from "react"

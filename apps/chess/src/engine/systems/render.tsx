@@ -1,7 +1,7 @@
 import { useFrame } from "@react-three/fiber"
 import { folder } from "leva"
 import { Vector3, Euler } from "three"
-import { game } from "../state"
+import { game } from "../game"
 import { registerComponent } from "./editor"
 
 const follower = game.world.with("helper$", "transform")

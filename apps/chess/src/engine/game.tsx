@@ -12,7 +12,7 @@ export const gameplayStore = makeStore({
   listener: null as AudioListener | null
 })
 
-import { parse } from "../world"
+import { parse } from "./world"
 
 const rawData = await fetch("/scenes/home.json").then((res) => res.text())
 
