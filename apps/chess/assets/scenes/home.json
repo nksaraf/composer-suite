@@ -1,11 +1,11 @@
 [
   {
     "name": "World",
-    "script": "/src/engine/src/scripts/world.tsx"
+    "script": "/src/scripts/world.tsx"
   },
   {
     "name": "Tree",
-    "script": "/src/engine/src/scripts/tree.tsx",
+    "script": "/src/scripts/tree.tsx",
     "transform": {
       "position": [0, 0, 0],
       "rotation": [0, 0, 0, "XYZ"],

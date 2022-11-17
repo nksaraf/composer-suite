@@ -1,5 +1,5 @@
 import { Suspense } from "react"
-import { Model } from "../systems/gltf"
+import { Model } from "../engine/src/systems/gltf"
 
 const MODELS = {
   Beech:

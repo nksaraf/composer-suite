@@ -1,6 +1,6 @@
 import { Html, useTexture } from "@react-three/drei"
 import { Grass, resolution, width } from "./grass"
-import { game } from "../../engine/src/state"
+import { game } from "vinxi/src/state"
 import { useTreeModel } from "../../models/Tree"
 import { useFrame } from "@react-three/fiber"
 import { useEffect, useMemo, useRef } from "react"
@@ -14,7 +14,7 @@ import {
   RepeatWrapping,
   Vector3
 } from "three"
-import { getYPosition, useHeightmap } from "./useHeightmap"
+import { getYPosition, useHeightmap } from "../useHeightmap"
 
 const players = game.world.with("controller", "transform")
 export function Instances({ count = 100, temp = new Object3D() }) {

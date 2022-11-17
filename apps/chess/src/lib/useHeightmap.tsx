@@ -7,8 +7,8 @@ import {
   Color,
   Float32BufferAttribute
 } from "three"
-import { width, resolution } from "./grass"
-import { useNoiseTexture } from "./ground"
+import { width, resolution } from "./terrain/grass"
+import { useNoiseTexture } from "./terrain"
 
 export function useHeightmap() {
   const texture = useNoiseTexture()

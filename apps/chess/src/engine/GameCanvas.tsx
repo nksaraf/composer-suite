@@ -3,12 +3,12 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import * as AC from "audio-composer"
 import { Suspense } from "react"
 import * as RC from "render-composer"
-import { Stage } from "../configuration"
+import { Stage } from "./configuration"
 import { controller } from "../input"
 import { Physics } from "@react-three/rapier"
 import { ErrorBoundary } from "react-error-boundary"
 import { SidebarTunnel } from "./state"
-import { Devtools } from "../scenes/world/Devtools"
+import { Devtools } from "./Devtools"
 
 export const World = ({ children }: React.PropsWithChildren<{}>) => {
   return (

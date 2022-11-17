@@ -6,7 +6,7 @@ import * as THREE from "three"
 import React, { useRef } from "react"
 import { useGLTF, useAnimations } from "@react-three/drei"
 import { GLTF } from "three-stdlib"
-import { createModel } from "../../lib/createModel"
+import { createModel } from "../lib/createModel"
 import mergeRefs from "react-merge-refs"
 
 type GLTFResult = GLTF & {
