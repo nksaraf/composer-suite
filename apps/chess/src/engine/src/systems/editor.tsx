@@ -19,6 +19,8 @@ import { selectButton } from "../lib/selectButton"
 import { game } from "../state"
 import { With } from "miniplex"
 import { bitmask, Layers } from "render-composer"
+import { SidebarTunnel } from "../../state"
+import { EditorPanels } from "../../editor/EditorPanels"
 
 declare global {
   export interface Components {
@@ -121,6 +123,9 @@ export default function EditorSystem() {
     <>
       <EditorControls />
       <EditorCamera />
+      <SidebarTunnel.In>
+        <EditorPanels />
+      </SidebarTunnel.In>
       {grid && <gridHelper layers-mask={bitmask(1)} />}
       {axis && <axesHelper layers-mask={bitmask(1)} />}
       <GizmoHelper alignment={"bottom-right"}>

@@ -24,11 +24,7 @@ export function useHeightmap() {
       // document.body.appendChild(el)
       return ctx?.getImageData(0, 0, 512, 512)!
     },
-    queryKey: ["heightmap"],
-    suspense: true,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false
+    queryKey: ["heightmap"]
   })
 
   return query.data

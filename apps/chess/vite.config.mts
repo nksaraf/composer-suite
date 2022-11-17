@@ -4,6 +4,7 @@ import react from "@vitejs/plugin-react"
 import { resolve } from "path"
 import fs from "fs-extra"
 import _debug from "debug"
+import tsconfiPaths from "vite-tsconfig-paths"
 import type { Plugin, ResolvedConfig, ViteDevServer } from "vite"
 import { createMiddleware } from "@hattip/adapter-node"
 
@@ -36,8 +37,9 @@ function hattip({
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  publicDir: 'assets',
+  publicDir: "assets",
   plugins: [
+    tsconfiPaths(),
     react(),
     hattip({
       handler: (config, server) => async (event) => {

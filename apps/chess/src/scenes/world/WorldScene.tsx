@@ -1,4 +1,5 @@
 import { bitmask, Layers } from "render-composer"
+import { PostProcessing } from "../../common/PostProcessing"
 import { Skybox } from "../../common/Skybox"
 
 import { Devtools } from "./Devtools"
@@ -7,6 +8,7 @@ import { Systems } from "./Systems"
 export function Scene() {
   return (
     <>
+      <PostProcessing />
       <Devtools />
       <Skybox />
 

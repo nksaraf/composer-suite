@@ -1,8 +1,12 @@
+import { useStore } from "statery"
 import { Leva } from "leva"
+import { store } from "vinxi/src/systems/editor"
 
 export function EditorPanels() {
+  const { editor } = useStore(store)
   return (
     <Leva
+      hidden={!editor}
       theme={{
         space: {
           rowGap: "2px",
