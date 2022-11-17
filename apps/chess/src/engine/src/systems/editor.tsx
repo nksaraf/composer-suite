@@ -8,7 +8,7 @@ import {
 import { useStore } from "statery"
 import { makeStore } from "statery"
 import { useControls, folder, buttonGroup } from "leva"
-import { DirectionalLightProps, useFrame } from "@react-three/fiber"
+import { DirectionalLightProps, useFrame, useThree } from "@react-three/fiber"
 import { Euler, MathUtils, Object3D, Vector3 } from "three"
 import { TransformControls as TransformControlsImpl } from "three-stdlib"
 import { useKeyboardShortcuts } from "../components/useKeyboardShortcuts"
@@ -18,6 +18,7 @@ import { usePersistedControls } from "../components/usePersistedControls"
 import { selectButton } from "../components/selectButton"
 import { game } from "../../../scenes/world/gameplay/state"
 import { With } from "miniplex"
+import { bitmask, Layers } from "render-composer"
 
 declare global {
   export interface Components {
@@ -100,20 +101,28 @@ export default function EditorSystem() {
       }
     })
   })
+  const a = useThree((s) => s.raycaster)
 
   useEffect(() => {
+    if (editor) {
+      a.layers.mask = bitmask(Layers.Default, 1)
+    }
+
     set({
       // @ts-ignore
       enabled: editor
     })
+    return () => {
+      a.layers.mask = bitmask(Layers.Default)
+    }
   }, [editor])
 
   return editor ? (
     <>
       <EditorControls />
       <EditorCamera />
-      {grid && <gridHelper />}
-      {axis && <axesHelper />}
+      {grid && <gridHelper layers-mask={bitmask(1)} />}
+      {axis && <axesHelper layers-mask={bitmask(1)} />}
       <GizmoHelper alignment={"bottom-right"}>
         <GizmoViewport />
       </GizmoHelper>
@@ -127,7 +136,11 @@ function EditorCamera() {
   })
   return (
     <>
-      <PerspectiveCamera position={camera} makeDefault />
+      <PerspectiveCamera
+        layers-mask={bitmask(Layers.Default, 1)}
+        position={camera}
+        makeDefault
+      />
       <OrbitControls
         makeDefault
         onChange={(e) => {
@@ -163,15 +176,18 @@ function EntityTransformControls({
 }: {
   entity: Components
 }): JSX.Element {
-  let ref = useRef<TransformControlsImpl>()
+  let ref = useRef<TransformControlsImpl>(null)
   useEffect(() => {
+    ref.current.layers.mask = bitmask(1)
+    ref.current.raycaster.layers.mask = bitmask(1)
+    ref.current.camera.layers.mask = bitmask(1)
+    ref.current.traverse((o) => {
+      o.layers.mask = bitmask(1)
+    })
     function keyDown(event) {
       let control = ref.current
+      if (!control) return
       switch (event.keyCode) {
-        case 81: // Q
-          control.setSpace(control.space === "local" ? "world" : "local")
-          break
-
         case 16: // Shift
           control.setTranslationSnap(0.5)
           control.setRotationSnap(MathUtils.degToRad(15))
@@ -197,7 +213,7 @@ function EntityTransformControls({
 
         case 189:
         case 109: // -, _, num-
-          control.setSize(Math.max(control.size - 0.1, 0.1))
+          control.setSize(Math.max(control - 0.1, 0.1))
           break
 
         case 88: // X
@@ -278,6 +294,7 @@ export function registerComponent<T extends keyof Components>(
 
 function EntityControls({ entity }: { entity: Components }) {
   console.log("selected", entity)
+  const scene = useThree((s) => s.scene)
   const [run, setRun] = useState(0)
   const [, set] = useControls(() => {
     let name = entity.name ?? "unnamed" + i++
@@ -286,8 +303,10 @@ function EntityControls({ entity }: { entity: Components }) {
       if (componentLibrary[key]) {
         controls = {
           ...controls,
-          ...(componentLibrary[key]?.controls?.(entity, () =>
-            setRun((r) => r + 1)
+          ...(componentLibrary[key]?.controls?.(
+            entity,
+            () => setRun((r) => r + 1),
+            scene
           ) ?? {})
         }
       }

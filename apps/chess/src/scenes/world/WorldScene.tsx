@@ -4,13 +4,13 @@ import { Skybox } from "../../common/Skybox"
 import { Stage } from "../../configuration"
 import { ErrorBoundary } from "react-error-boundary"
 import { Perf } from "r3f-perf"
-import { useTexture } from "@react-three/drei"
+import { Html, useFBO, useTexture } from "@react-three/drei"
 import { Grass, resolution, width } from "./grass"
 
 import { folder, useControls } from "leva"
 import { game } from "./gameplay/state"
 import { useTreeModel } from "../../models/Tree"
-import { useFrame } from "@react-three/fiber"
+import { Canvas, createRoot, useFrame, useThree } from "@react-three/fiber"
 import { useEffect, useMemo, useRef } from "react"
 import {
   InstancedBufferGeometry,
@@ -24,6 +24,7 @@ import {
 } from "three"
 import { getYPosition, useHeightmap } from "./useHeightmap"
 import CameraSystem, {
+  activeCameras,
   ActiveCameraSystem
 } from "../../engine/src/systems/camera"
 import EditorSystem from "../../engine/src/systems/editor"
@@ -33,6 +34,7 @@ import { ControlledMovementSystem } from "../../engine/src/systems/controller"
 import MeshSystem from "../../engine/src/systems/mesh"
 import { ScriptSystem } from "../../engine/src/systems/script"
 import LightSystem from "../../engine/src/systems/light"
+import { useLayoutEffect } from "react"
 
 export const World = ({ children }: React.PropsWithChildren<{}>) => {
   return (
@@ -73,19 +75,19 @@ export const WorldScene = () => {
         layers-mask={bitmask(Layers.Default, Layers.TransparentFX)}
       /> */}
       {/* <Player /> */}
-      <Instances />
 
       {/* Systems */}
-      <EditorSystem />
       <GLTFSystem />
       <ScriptSystem />
       <MeshSystem />
       <LightSystem />
       <CameraSystem />
+      <Instances />
       <RenderSystem />
       <ActiveCameraSystem />
       <ControlledMovementSystem />
       <GroundSystem />
+      <EditorSystem />
     </World>
   )
 }
@@ -116,6 +118,7 @@ const players = game.world.with("controller", "transform")
 function Instances({ count = 100, temp = new Object3D() }) {
   const ref = useRef<InstancedMesh>(null)
   const heightmap = useHeightmap()
+
   useEffect(() => {
     // Set positions
 
@@ -135,10 +138,13 @@ function Instances({ count = 100, temp = new Object3D() }) {
   }, [])
   const treeModel = useTreeModel()
   return (
-    <instancedMesh
-      ref={ref}
-      args={[treeModel.geometry, treeModel.material, count]}
-    ></instancedMesh>
+    <>
+      <instancedMesh
+        ref={ref}
+        args={[treeModel.geometry, treeModel.material, count]}
+      ></instancedMesh>
+      <Html></Html>
+    </>
   )
 }
 
@@ -203,24 +209,24 @@ function GroundSystem() {
     // ref.current.visible = false
   })
 
-  useControls({
-    scale: {
-      value: 5.0,
-      onChange(v) {
-        // groundRef.current!.material.uniforms.scale.value = v
-        ref.current!.material.uniforms.scale.value = v
-      }
-    },
-    offset: {
-      value: [width / 2, width / 2],
-      onChange(v) {
-        // groundRef.current!.material.uniforms.offsetX.value = v[0]
-        // groundRef.current!.material.uniforms.offsetY.value = v[1]
-        ref.current!.material.uniforms.offsetX.value = v[0]
-        ref.current!.material.uniforms.offsetY.value = v[1]
-      }
-    }
-  })
+  // useControls({
+  //   scale: {
+  //     value: 5.0,
+  //     onChange(v) {
+  //       // groundRef.current!.material.uniforms.scale.value = v
+  //       ref.current!.material.uniforms.scale.value = v
+  //     }
+  //   },
+  //   offset: {
+  //     value: [width / 2, width / 2],
+  //     onChange(v) {
+  //       // groundRef.current!.material.uniforms.offsetX.value = v[0]
+  //       // groundRef.current!.material.uniforms.offsetY.value = v[1]
+  //       ref.current!.material.uniforms.offsetX.value = v[0]
+  //       ref.current!.material.uniforms.offsetY.value = v[1]
+  //     }
+  //   }
+  // })
 
   const texture = useTexture("/textures/grasslands.jpeg", (text) => {
     text.wrapS = text.wrapT = RepeatWrapping
@@ -232,7 +238,7 @@ function GroundSystem() {
         offset={[512 / 2, 512 / 2]}
         ref={ref}
         noiseTexture={noiseTexture}
-        scale={4.0}
+        scale={5.0}
       />
       <mesh ref={groundRef} geometry={groundGeometry} receiveShadow>
         {/* <GroundMaterial

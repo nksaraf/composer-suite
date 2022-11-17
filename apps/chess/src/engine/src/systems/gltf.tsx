@@ -1,25 +1,29 @@
 import { Suspense, useState } from "react"
-import { Model } from "../components/Model"
 import { registerComponent } from "./editor"
 import { folder } from "leva"
 import { game } from "../../../scenes/world/gameplay/state"
 import { With } from "miniplex"
 import { useGLTF } from "@react-three/drei"
-import { GLTF } from "three-stdlib"
+import { useLayoutEffect } from "react"
+import { store } from "../systems/editor"
 
 declare global {
   export interface Components {
     gltf?: {
       url: string
     }
-    gltf$: {
+    gltf$?: {
       setUrl: (url: string) => void
     }
   }
 }
 
 registerComponent("gltf", {
-  addTo(e) {},
+  addTo(e) {
+    game.world.addComponent(e, "gltf", {
+      url: "/Ghost.gltf"
+    })
+  },
   controls(entity) {
     return {
       gltf: folder(
@@ -28,7 +32,9 @@ registerComponent("gltf", {
             value: entity.gltf?.url,
             onChange: (value) => {
               entity.gltf.url = value
-              entity.gltf$.setUrl(value)
+              if (entity.gltf$) {
+                entity.gltf$.setUrl(value)
+              }
             },
             transient: true
           }
@@ -59,5 +65,32 @@ export function GLTFSystem() {
         </game.Entity>
       )}
     </game.Entities>
+  )
+}
+
+export function Model({ url, ...props }: { url: string }) {
+  const entity = game.useCurrentEntity()!
+  const { scene } = useGLTF(url)
+
+  useLayoutEffect(() => {
+    entity.mesh$ = scene
+  }, [entity, scene])
+  return (
+    <game.Component name="mesh$">
+      <primitive
+        object={scene}
+        key={scene}
+        onPointerDown={(e) => {
+          e.stopPropagation()
+          console.log(e)
+          store.set(({ entities: selectedEntities }) => {
+            if (e.shiftKey) {
+              return { entities: [...selectedEntities, entity] }
+            }
+            return { entities: [entity] }
+          })
+        }}
+      />
+    </game.Component>
   )
 }

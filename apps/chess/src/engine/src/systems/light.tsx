@@ -1,10 +1,11 @@
 import { Html, PivotControls, Plane, Sphere } from "@react-three/drei"
 import { DirectionalLight, DirectionalLightHelper } from "three"
 import { Helper } from "../components/Helper"
-import { store } from "./editor"
+import { selectEntity, store } from "./editor"
 import { useStore } from "statery"
 import { DirectionalLightProps, useFrame } from "@react-three/fiber"
-import { game } from "../../../scenes/world/gameplay/state"
+import { game, Layers } from "../../../scenes/world/gameplay/state"
+import { bitmask } from "render-composer"
 export const directionalLights = game.world.with("directionalLight")
 export const directionalLightObjects = game.world.with(
   "directionalLight$",
@@ -42,6 +43,7 @@ export default function LightSystem() {
           {editor && (
             <game.Component name="helper$">
               <Sphere
+                layers-mask={bitmask(1)}
                 scale={0.25}
                 onPointerDown={(e) => {
                   e.stopPropagation()
@@ -81,4 +83,3 @@ export default function LightSystem() {
     </game.Entities>
   )
 }
-

@@ -36,21 +36,21 @@ export function GrassSystem() {
     grassMaterial.uniforms.posZ.value = z
   })
 
-  useControls({
-    scale: {
-      value: 4.0,
-      onChange(v: number) {
-        ref.current!.material.uniforms.scale.value = v
-      }
-    },
-    offset: {
-      value: [width / 2, width / 2],
-      onChange(v) {
-        ref.current!.material.uniforms.offsetX.value = v[0]
-        ref.current!.material.uniforms.offsetY.value = v[1]
-      }
-    }
-  })
+  // useControls({
+  //   scale: {
+  //     value: 4.0,
+  //     onChange(v: number) {
+  //       ref.current!.material.uniforms.scale.value = v
+  //     }
+  //   },
+  //   offset: {
+  //     value: [width / 2, width / 2],
+  //     onChange(v) {
+  //       ref.current!.material.uniforms.offsetX.value = v[0]
+  //       ref.current!.material.uniforms.offsetY.value = v[1]
+  //     }
+  //   }
+  // })
   return (
     <GrassMaterial
       ref={ref}
@@ -85,21 +85,21 @@ export function GroundSystem() {
     groundRef.current.material.uniforms.posZ.value = z
   })
 
-  useControls({
-    scale: {
-      value: 4.0,
-      onChange(v) {
-        groundRef.current!.material.uniforms.scale.value = v
-      }
-    },
-    offset: {
-      value: [width / 2, width / 2],
-      onChange(v) {
-        groundRef.current!.material.uniforms.offsetX.value = v[0]
-        groundRef.current!.material.uniforms.offsetY.value = v[1]
-      }
-    }
-  })
+  // useControls({
+  //   scale: {
+  //     value: 4.0,
+  //     onChange(v) {
+  //       groundRef.current!.material.uniforms.scale.value = v
+  //     }
+  //   },
+  //   offset: {
+  //     value: [width / 2, width / 2],
+  //     onChange(v) {
+  //       groundRef.current!.material.uniforms.offsetX.value = v[0]
+  //       groundRef.current!.material.uniforms.offsetY.value = v[1]
+  //     }
+  //   }
+  // })
 
   return (
     <mesh ref={groundRef} geometry={memo}>

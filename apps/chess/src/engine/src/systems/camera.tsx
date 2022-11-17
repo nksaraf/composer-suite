@@ -1,16 +1,23 @@
 import { Html, Sphere } from "@react-three/drei"
-import { CameraHelper, Object3D, PerspectiveCamera, Vector3 } from "three"
+import { CameraHelper, PerspectiveCamera, Vector3 } from "three"
 import { Helper } from "../components/Helper"
 import { registerComponent, selectEntity, store } from "./editor"
 
 import { useEntities } from "miniplex/react"
-import { PerspectiveCameraProps, useFrame, useThree } from "@react-three/fiber"
-import { useLayoutEffect } from "react"
+import {
+  createRoot,
+  PerspectiveCameraProps,
+  useFrame,
+  useThree
+} from "@react-three/fiber"
+import { useLayoutEffect, useRef } from "react"
 import { useStore } from "statery"
 import { folder } from "leva"
 import { usePersistedControls } from "../components/usePersistedControls"
 import { game } from "../../../scenes/world/gameplay/state"
 import { Stage } from "../../../configuration"
+import { bitmask } from "render-composer"
+import { createPlugin, useInputContext } from "leva/plugin"
 
 declare global {
   export interface Components {
@@ -24,53 +31,86 @@ declare global {
   }
 }
 
-registerComponent("cameraTarget", {
-  addTo(e) {
-    game.world.addComponent(e, "cameraTarget", {
-      positionOffset: [5, 5, 5],
-      lookAtOffset: [0, 0, 0]
-    })
-  },
-  controls(entity) {
-    return {
-      cameraTarget: folder(
-        {
-          positionOffset: {
-            step: 0.5,
-            value: entity.cameraTarget.positionOffset,
-            onChange: (value) => {
-              entity.cameraTarget.positionOffset = value
-            },
-            transient: true
-          },
-          lookAtOffset: {
-            step: 0.5,
-            value: entity.cameraTarget.lookAtOffset,
-            onChange: (value) => {
-              entity.cameraTarget.lookAtOffset = value
-            },
-            transient: true
-          }
-        },
-        {
-          collapsed: true
-        }
-      )
-    }
-  }
-})
-
 export const cameras = game.world.with("camera")
 export const activeCameras = game.world.with("camera$", "transform", "active")
 export const cameraObjects = game.world.with("camera$", "transform")
 export const cameraTargets = game.world.with("cameraTarget", "transform")
+
+export default function CameraSystem() {
+  const { editor } = useStore(store)
+  useFrame(() => {
+    for (var entity of cameraObjects) {
+      if (!entity.controls || editor) {
+        entity.camera$.position.copy(entity.transform.position)
+        entity.transform.rotation &&
+          entity.camera$.rotation.copy(entity.transform.rotation)
+        entity.transform.scale &&
+          entity.camera$.scale.copy(entity.transform.scale)
+      }
+    }
+  })
+  return (
+    <>
+      <game.Entities in={cameras}>
+        {(entity) => (
+          <>
+            <game.Component name="camera$">
+              <perspectiveCamera
+                layers-mask={bitmask.not(1)}
+                {...entity.transform}
+                {...entity.camera}
+              />
+            </game.Component>
+            {editor && (
+              <game.Component name="helper$">
+                <Sphere
+                  layers-mask={bitmask(1)}
+                  scale={0.25}
+                  onPointerDown={(e) => {
+                    e.stopPropagation()
+                    console.log(e)
+                    selectEntity(entity)
+                  }}
+                >
+                  <Html
+                    style={{
+                      userSelect: "none"
+                    }}
+                    pointerEvents="all"
+                  >
+                    <span
+                      style={{
+                        fontSize: "1rem"
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        selectEntity(entity)
+                      }}
+                    >
+                      🎥
+                    </span>
+                  </Html>
+                  <meshBasicMaterial color="black" />
+                </Sphere>
+              </game.Component>
+            )}
+            {editor && (
+              <Helper entity={() => entity.camera$} helper={CameraHelper} />
+            )}
+          </>
+        )}
+      </game.Entities>
+      <CameraLookAtSystem />
+      <ActiveCameraSystem />
+    </>
+  )
+}
 
 const offset = new Vector3(-3, 10, -20)
 const lookAt = new Vector3(0, 1, 5)
 const idealLookAt = new Vector3()
 const tmpTarget = new Vector3()
 const tmpLookAt = new Vector3()
-const object = new Object3D()
 
 export const CameraLookAtSystem = () => {
   const [camera] = useEntities(activeCameras)
@@ -154,66 +194,121 @@ export const ActiveCameraSystem = () => {
   return null
 }
 
-export default function CameraSystem() {
-  const { editor } = useStore(store)
-  useFrame(() => {
-    for (var entity of cameraObjects) {
-      if (!entity.controls || editor) {
-        entity.camera$.position.copy(entity.transform.position)
-        entity.transform.rotation &&
-          entity.camera$.rotation.copy(entity.transform.rotation)
-        entity.transform.scale &&
-          entity.camera$.scale.copy(entity.transform.scale)
-      }
+var preview = createPlugin({
+  normalize(input) {
+    return {
+      settings: {
+        scene: input.scene,
+        entity: input.entity
+      },
+      value: ""
     }
+  },
+  format: (v) => v,
+  component: () => {
+    const context = useInputContext()
+    const canvasRef = useRef<HTMLDivElement>(null)
+    useCameraPreview(context.settings.scene, context.settings.entity, canvasRef)
+
+    return (
+      <div
+        style={{
+          width: "100px",
+          height: "100px"
+        }}
+      >
+        <canvas ref={canvasRef} />
+      </div>
+    )
+  }
+})
+
+registerComponent("camera", {
+  addTo(e) {
+    game.world.addComponent(e, "camera", {})
+  },
+  controls(entity, reset, scene) {
+    return {
+      camera: folder(
+        {
+          // positionOffset: {
+          //   step: 0.5,
+          //   value: entity.cameraTarget.positionOffset,
+          //   onChange: (value) => {
+          //     entity.cameraTarget.positionOffset = value
+          //   },
+          //   transient: true
+          // },
+          // lookAtOffset: {
+          //   step: 0.5,
+          //   value: entity.cameraTarget.lookAtOffset,
+          //   onChange: (value) => {
+          //     entity.cameraTarget.lookAtOffset = value
+          //   },
+          //   transient: true
+          // }
+          preview: preview({
+            scene,
+            entity
+          })
+        },
+        {
+          collapsed: true
+        }
+      )
+    }
+  }
+})
+
+function Comp(props) {
+  const set = useThree((state) => state.set)
+  set({
+    scene: props.scene,
+    camera: props.camera
   })
-  return (
-    <>
-      <game.Entities in={cameras}>
-        {(entity) => (
-          <>
-            <game.Component name="camera$">
-              <perspectiveCamera {...entity.transform} {...entity.camera} />
-            </game.Component>
-            {editor && (
-              <game.Component name="helper$">
-                <Sphere
-                  scale={0.25}
-                  onPointerDown={(e) => {
-                    e.stopPropagation()
-                    selectEntity(entity)
-                  }}
-                >
-                  <Html
-                    style={{
-                      userSelect: "none"
-                    }}
-                    pointerEvents="all"
-                  >
-                    <span
-                      style={{
-                        fontSize: "1rem"
-                      }}
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        selectEntity(entity)
-                      }}
-                    >
-                      🎥
-                    </span>
-                  </Html>
-                  <meshBasicMaterial color="black" />
-                </Sphere>
-              </game.Component>
-            )}
-            {editor && (
-              <Helper entity={() => entity.camera$} helper={CameraHelper} />
-            )}
-          </>
-        )}
-      </game.Entities>
-      <CameraLookAtSystem />
-      <ActiveCameraSystem />
-    </>
-  )
+  return <></>
 }
+
+function useCameraPreview(scene, entity, canvasRef) {
+  useLayoutEffect(() => {
+    createRoot(canvasRef.current).render(
+      <Comp scene={scene} camera={entity.camera$} />
+    )
+  }, [scene, entity, canvasRef])
+}
+
+registerComponent("cameraTarget", {
+  addTo(e) {
+    game.world.addComponent(e, "cameraTarget", {
+      positionOffset: [5, 5, 5],
+      lookAtOffset: [0, 0, 0]
+    })
+  },
+  controls(entity) {
+    return {
+      cameraTarget: folder(
+        {
+          positionOffset: {
+            step: 0.5,
+            value: entity.cameraTarget.positionOffset,
+            onChange: (value) => {
+              entity.cameraTarget.positionOffset = value
+            },
+            transient: true
+          },
+          lookAtOffset: {
+            step: 0.5,
+            value: entity.cameraTarget.lookAtOffset,
+            onChange: (value) => {
+              entity.cameraTarget.lookAtOffset = value
+            },
+            transient: true
+          }
+        },
+        {
+          collapsed: true
+        }
+      )
+    }
+  }
+})
