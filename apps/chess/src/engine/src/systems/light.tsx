@@ -1,10 +1,10 @@
 import { Html, PivotControls, Plane, Sphere } from "@react-three/drei"
 import { DirectionalLight, DirectionalLightHelper } from "three"
-import { Helper } from "../components/Helper"
+import { Helper } from "../lib/Helper"
 import { selectEntity, store } from "./editor"
 import { useStore } from "statery"
 import { DirectionalLightProps, useFrame } from "@react-three/fiber"
-import { game, Layers } from "../../../scenes/world/gameplay/state"
+import { game, Layers } from "../state"
 import { bitmask } from "render-composer"
 export const directionalLights = game.world.with("directionalLight")
 export const directionalLightObjects = game.world.with(

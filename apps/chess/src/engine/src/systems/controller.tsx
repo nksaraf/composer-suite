@@ -6,7 +6,7 @@ import { useStore } from "statery"
 import { Vector3, Quaternion } from "three"
 import { lerp } from "three/src/math/MathUtils"
 import { controller } from "../../../input"
-import { game } from "../../../scenes/world/gameplay/state"
+import { game } from "../state"
 import { store } from "./editor"
 
 declare global {

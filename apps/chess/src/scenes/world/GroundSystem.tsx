@@ -12,7 +12,7 @@ import {
   Vector3
 } from "three"
 import { useNoiseTexture } from "./useNoiseTexture"
-import { game } from "./gameplay/state"
+import { game } from "../../engine/src/state"
 
 export const players = game.world.with("player", "sceneObject", "velocity")
 

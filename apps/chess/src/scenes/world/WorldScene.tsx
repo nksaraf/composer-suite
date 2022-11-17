@@ -8,7 +8,7 @@ import { Html, useFBO, useTexture } from "@react-three/drei"
 import { Grass, resolution, width } from "./grass"
 
 import { folder, useControls } from "leva"
-import { game } from "./gameplay/state"
+import { game } from "../../engine/src/state"
 import { useTreeModel } from "../../models/Tree"
 import { Canvas, createRoot, useFrame, useThree } from "@react-three/fiber"
 import { useEffect, useMemo, useRef } from "react"

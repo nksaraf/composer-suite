@@ -4,7 +4,7 @@ import { store } from "../systems/editor"
 
 import { useLayoutEffect, useMemo } from "react"
 import { useStore } from "statery"
-import { game } from "../../../scenes/world/gameplay/state"
+import { game } from "../state"
 
 export const useKeyboard = ({ onKeyDown = null, onKeyUp = null } = {}) => {
   const keys = useMemo(() => new Set<string>(), [])

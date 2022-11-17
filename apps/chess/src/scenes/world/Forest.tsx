@@ -10,7 +10,7 @@ import { archetypes, Asteroid, ECS, PhysicsLayers } from "../state"
 import { physics } from "../systems/PhysicsSystem"
 import { bitmask } from "../util/bitmask"
 
-import { Entity } from "./gameplay/state"
+import { Entity } from "../../engine/src/state"
 
 export const RenderableEntity = ({ render }: Pick<Entity, "render">) => render!
 

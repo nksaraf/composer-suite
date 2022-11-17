@@ -1,6 +1,6 @@
 import { Html, Sphere } from "@react-three/drei"
 import { CameraHelper, PerspectiveCamera, Vector3 } from "three"
-import { Helper } from "../components/Helper"
+import { Helper } from "../lib/Helper"
 import { registerComponent, selectEntity, store } from "./editor"
 
 import { useEntities } from "miniplex/react"
@@ -13,8 +13,8 @@ import {
 import { useLayoutEffect, useRef } from "react"
 import { useStore } from "statery"
 import { folder } from "leva"
-import { usePersistedControls } from "../components/usePersistedControls"
-import { game } from "../../../scenes/world/gameplay/state"
+import { usePersistedControls } from "../lib/usePersistedControls"
+import { game } from "../state"
 import { Stage } from "../../../configuration"
 import { bitmask } from "render-composer"
 import { createPlugin, useInputContext } from "leva/plugin"

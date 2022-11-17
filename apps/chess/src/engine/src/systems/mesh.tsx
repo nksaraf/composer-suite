@@ -2,10 +2,10 @@ import { registerComponent, store } from "./editor"
 import React from "react"
 import * as THREE from "three"
 import { Mesh } from "three"
-import { MeshComponent } from "../components/MeshComponent"
+import { MeshComponent } from "../lib/MeshComponent"
 import { folder, LevaInputs } from "leva"
 import { useFrame } from "@react-three/fiber"
-import { game } from "../../../scenes/world/gameplay/state"
+import { game } from "../state"
 
 export const meshes = game.world.with("mesh").without("physics")
 export const meshObjects = game.world
