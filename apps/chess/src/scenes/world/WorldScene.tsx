@@ -1,21 +1,15 @@
 import { bitmask, Layers } from "render-composer"
 import { PostProcessing } from "../../common/PostProcessing"
-import { Skybox } from "../../common/Skybox"
+import { Skybox } from "./Skybox"
 
 import { Devtools } from "./Devtools"
 import { Systems } from "./Systems"
 
+
 export function Scene() {
   return (
     <>
-      <PostProcessing />
-      <Devtools />
-      <Skybox />
 
-      <ambientLight
-        intensity={0.1}
-        layers-mask={bitmask(Layers.Default, Layers.TransparentFX)}
-      />
       {/* <directionalLight
         position={[20, 20, 100]}
         intensity={1}

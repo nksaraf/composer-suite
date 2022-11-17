@@ -9,7 +9,6 @@ const MODELS = {
     "https://vazxmixjsiawhamofees.supabase.co/storage/v1/object/public/models/tree-spruce/model.gltf"
 }
 
-export default function ({ entity }) {
-  console.log("hereee")
+export default function Tree({ entity }) {
   return <Model url={MODELS.Lime} />
 }

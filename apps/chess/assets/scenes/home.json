@@ -1,6 +1,7 @@
 [
   {
-    "name": "World"
+    "name": "World",
+    "script": "/src/engine/src/scripts/world.tsx"
   },
   {
     "name": "Tree",
