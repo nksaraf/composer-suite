@@ -141,19 +141,19 @@ export const CameraLookAtSystem = () => {
         camera.camera$.lookAt(0, 0, 0)
         camera.transform.rotation.copy(camera.camera$.rotation)
       } else {
-        // lookAt.set(...target.cameraTarget.lookAtOffset)
-        // offset.set(...target.cameraTarget.positionOffset)
+        lookAt.set(...target.cameraTarget.lookAtOffset)
+        offset.set(...target.cameraTarget.positionOffset)
         // based on code from https://github.com/simondevyoutube/ThreeJS_Tutorial_ThirdPersonCamera/blob/main/main.js
         const idealTarget = tmpTarget
           .copy(offset)
-          .applyEuler(target.transform?.rotation)
+          // .applyEuler(target.transform?.rotation)
           .add(target.transform.position)
 
         const t = (1 - Math.pow(0.001, dt)) / 3
 
         const cameraLookAt = tmpLookAt
           .copy(lookAt)
-          .applyEuler(target.transform?.rotation)
+          // .applyEuler(target.transform?.rotation)
           .add(target.transform.position)
 
         idealLookAt.lerp(cameraLookAt, t)

@@ -19,19 +19,21 @@ import MeshSystem from "vinxi/systems/mesh"
 import { ScriptSystem } from "vinxi/systems/script"
 import LightSystem from "vinxi/systems/light"
 import { Instances, GroundSystem as TerrainSystem } from "./src/lib/terrain"
+import { GridSystem } from "./src/scripts/grid"
 
 function Systems() {
   return (
     <>
+      <GridSystem />
       <GLTFSystem />
       <ScriptSystem />
       <MeshSystem />
       <LightSystem />
       <CameraSystem />
-      <Instances />
+      {/* <Instances /> */}
       <RenderSystem />
       <ControlledMovementSystem />
-      <TerrainSystem />
+      {/* <TerrainSystem /> */}
       <EditorSystem />
     </>
   )

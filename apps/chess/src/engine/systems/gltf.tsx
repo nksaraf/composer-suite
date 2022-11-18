@@ -1,11 +1,14 @@
-import { Suspense, useState } from "react"
-import { registerComponent } from "./editor"
+import { Suspense, useRef, useState } from "react"
+import { registerComponent, selectEntity } from "./editor"
 import { folder } from "leva"
 import { game } from "../game"
 import { With } from "miniplex"
-import { useGLTF } from "@react-three/drei"
+import { useAnimations, useGLTF, useHelper } from "@react-three/drei"
 import { useLayoutEffect } from "react"
 import { store } from "../systems/editor"
+import { useFrame } from "@react-three/fiber"
+import { BoxHelper, Group } from "three"
+import { useEffect } from "react"
 
 declare global {
   export interface Components {
@@ -15,6 +18,7 @@ declare global {
     gltf$?: {
       setUrl: (url: string) => void
     }
+    gltfMesh$?: Group
   }
 }
 
@@ -52,9 +56,21 @@ const gltfs = game.world.with("gltf")
 function Gltf({ entity }: { entity: With<Components, "gltf"> }) {
   const [url, setUrl] = useState(entity.gltf.url)
   entity.gltf$ = { setUrl }
-  return <Model url={url} />
+  return (
+    <Suspense>
+      <Model url={url} {...entity.gltf} />
+    </Suspense>
+  )
 }
 export function GLTFSystem() {
+  useFrame(() => {
+    for (var entity of gltfObjects) {
+      entity.gltfMesh$.position.copy(entity.transform.position)
+      entity.gltfMesh$.rotation.copy(entity.transform.rotation)
+      entity.gltfMesh$.scale.copy(entity.transform.scale)
+    }
+  })
+
   return (
     <game.Entities in={gltfs}>
       {(entity) => (
@@ -68,29 +84,30 @@ export function GLTFSystem() {
   )
 }
 
+const gltfObjects = game.world.with("gltfMesh$", "transform").without("physics")
+
 export function Model({ url, ...props }: { url: string }) {
   const entity = game.useCurrentEntity()!
-  const { scene } = useGLTF(url)
+  const data = useGLTF(url)
+  const group = useRef<Group>()
+  const animations = useAnimations(data.animations, group)
+  useEffect(() => {
+    entity.gltfMesh$ = data.scene
+    entity.gltf$ = Object.assign(entity.gltf$ ?? {}, data)
+    entity.mixer$ = animations
+  }, [entity, data, animations])
 
-  useLayoutEffect(() => {
-    entity.mesh$ = scene
-  }, [entity, scene])
   return (
-    <game.Component name="mesh$">
-      <primitive
-        object={scene}
-        key={scene}
+    <game.Component name="gltfMesh$">
+      <group
+        ref={group}
         onPointerDown={(e) => {
           e.stopPropagation()
-          console.log(e)
-          store.set(({ entities: selectedEntities }) => {
-            if (e.shiftKey) {
-              return { entities: [...selectedEntities, entity] }
-            }
-            return { entities: [entity] }
-          })
+          selectEntity(entity)
         }}
-      />
+      >
+        <primitive object={data.scene} key={data.scene} />
+      </group>
     </game.Component>
   )
 }

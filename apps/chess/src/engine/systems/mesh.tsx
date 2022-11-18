@@ -7,10 +7,9 @@ import { folder, LevaInputs } from "leva"
 import { useFrame } from "@react-three/fiber"
 import { game } from "../game"
 
-export const meshes = game.world.with("mesh").without("physics")
-export const meshObjects = game.world
-  .with("mesh$", "transform")
-  .without("physics")
+export const meshes = game.world.with("mesh")
+export const meshObjects = game.world.with("mesh$", "transform")
+// .without("physics")
 
 // export const geometryWithoutMaterial = game.world
 //   .with("geometry")

@@ -1,10 +1,10 @@
 import { useTexture } from "@react-three/drei"
-import { MeshProps } from "@react-three/fiber"
+import { MeshProps, useThree } from "@react-three/fiber"
 import React, { forwardRef, useLayoutEffect, useRef } from "react"
 import mergeRefs from "react-merge-refs"
 import { Mesh } from "three"
 import { game } from "../game"
-import { store } from "../systems/editor"
+import { selectEntity, store } from "../systems/editor"
 
 export const MeshComponent = forwardRef<
   Mesh,
@@ -29,26 +29,28 @@ export const MeshComponent = forwardRef<
       game.world.removeComponent(entity, "mesh$")
     }
   }, [entity])
+  const controls = useThree((state) => state.controls)
+  console.log(controls)
   return (
     <mesh
       ref={mergeRefs([ref, forwardedRef])}
       {...props}
-      onClick={(e) => {
-        e.stopPropagation()
-        store.set(({ entities: selectedEntities }) => {
-          if (e.shiftKey) {
-            return { entities: [...selectedEntities, entity] }
-          }
-          return { entities: [entity] }
-        })
+      onPointerDown={(e) => {
+        console.log(e)
+        const ent = store.state.entities[0]
+
+        if (!ent) {
+          selectEntity(entity)
+          return
+        } else if (ent.transformControls$ && !ent.transformControls$.axis) {
+          console.log(e, ent.transformControls$.axis)
+          selectEntity(entity)
+        }
       }}
     >
-      {React.createElement(
-        entity.mesh.geometry.type,
-        entity.mesh.geometry.props
-      )}
-      {React.createElement(entity.mesh.material.type, {
-        ...entity.mesh.material.props,
+      {React.createElement(geometry.type, geometry.props)}
+      {React.createElement(material.type, {
+        ...material.props,
         map: texture
       })}
     </mesh>

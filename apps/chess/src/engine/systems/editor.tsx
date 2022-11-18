@@ -7,7 +7,13 @@ import {
 } from "@react-three/drei"
 import { useStore } from "statery"
 import { makeStore } from "statery"
-import { useControls, folder, buttonGroup } from "leva"
+import {
+  useControls,
+  folder,
+  buttonGroup,
+  LevaPanel,
+  useCreateStore
+} from "leva"
 import { DirectionalLightProps, useFrame, useThree } from "@react-three/fiber"
 import { Euler, MathUtils, Object3D, Vector3 } from "three"
 import { TransformControls as TransformControlsImpl } from "three-stdlib"
@@ -21,6 +27,7 @@ import { With } from "miniplex"
 import { bitmask, Layers } from "render-composer"
 import { SidebarTunnel } from "../state"
 import { EditorPanels } from "../editor/EditorPanels"
+import { Components, createPlugin, styled, useInputContext } from "leva/plugin"
 
 declare global {
   export interface Components {
@@ -49,6 +56,37 @@ export function selectEntity(entity: Components) {
 }
 
 let i = 0
+
+const EntityLabel = styled("div", {
+  color: "$highlight2"
+})
+
+const entities = createPlugin({
+  normalize(input) {
+    return { value: "", settings: input }
+  },
+  component: () => {
+    const a = useInputContext()
+    const [input, setInput] = useState(0)
+
+    useEffect(() => {
+      game.world.onEntityAdded.add((e) => setInput((i) => i + 1))
+    }, [])
+    return (
+      <div>
+        {game.world.entities.map((entity) => (
+          <EntityLabel
+            onClick={(e) => {
+              selectEntity(entity)
+            }}
+          >
+            {entity.name}
+          </EntityLabel>
+        ))}
+      </div>
+    )
+  }
+})
 
 export default function EditorSystem() {
   const { editor } = useStore(store)
@@ -119,12 +157,45 @@ export default function EditorSystem() {
     }
   }, [editor])
 
+  const entityStore = useCreateStore()
+
+  useControls(
+    {
+      entities: entities()
+    },
+    {
+      store: entityStore
+    }
+  )
+
+  const size = useThree((s) => s.size)
+
   return editor ? (
     <>
       <EditorControls />
       <EditorCamera />
       <SidebarTunnel.In>
         <EditorPanels />
+        <LevaPanel
+          ref={console.log}
+          flat={false}
+          store={entityStore}
+          titleBar={{
+            position: {
+              x: -size.width + 300,
+              y: 1
+            }
+          }}
+          theme={{
+            space: {
+              rowGap: "2px",
+              md: "10px"
+            },
+            sizes: {
+              titleBarHeight: "28px"
+            }
+          }}
+        />
       </SidebarTunnel.In>
       {grid && <gridHelper layers-mask={bitmask(1)} />}
       {axis && <axesHelper layers-mask={bitmask(1)} />}
@@ -184,13 +255,13 @@ function EntityTransformControls({
   let ref = useRef<TransformControlsImpl>(null)
   useEffect(() => {
     if (ref.current) {
-      ref.current.layers.mask = bitmask(1)
+      ref.current.layers.mask = bitmask(Layers.Default, 1)
       // @ts-expect-error
-      ref.current.raycaster.layers.mask = bitmask(1)
+      ref.current.raycaster.layers.mask = bitmask(Layers.Default, 1)
       // @ts-expect-error
-      ref.current.camera.layers.mask = bitmask(1)
+      ref.current.camera.layers.mask = bitmask(Layers.Default, 1)
       ref.current.traverse((o) => {
-        o.layers.mask = bitmask(1)
+        o.layers.mask = bitmask(Layers.Default, 1)
       })
     }
 
@@ -273,9 +344,11 @@ function EntityTransformControls({
       <game.Component name="transformControls$">
         <TransformControls
           ref={ref}
+          onPointerDown={(e) => {}}
           key={entity as any}
           {...entity.transform}
           onChange={(c) => {
+            console.log(c.target)
             if (c?.type === "change" && c.target.object && entity.transform) {
               entity.transform.position
                 ? entity.transform.position.copy(c.target.object.position)

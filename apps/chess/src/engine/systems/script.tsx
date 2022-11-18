@@ -9,7 +9,6 @@ function ScriptedEntity({ entity }) {
     map[entity.script] = el
     return el
   }, [])
-  console.log(Component)
   return <Component entity={entity} />
 }
 const scripts = game.world.with("script")
