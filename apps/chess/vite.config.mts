@@ -41,6 +41,17 @@ export default defineConfig({
   plugins: [
     tsconfiPaths(),
     react(),
+    {
+      name: "cross-server",
+      configureServer(server) {
+        server.middlewares.use(async (req, res, next) => {
+          // cross origin isolation
+          res.setHeader("Cross-Origin-Opener-Policy", "same-origin")
+          res.setHeader("Cross-Origin-Embedder-Policy", "require-corp")
+          next()
+        })
+      }
+    },
     hattip({
       handler: (config, server) => async (event) => {
         let url = new URL(event.request.url)
@@ -51,7 +62,14 @@ export default defineConfig({
             await server.transformIndexHtml(url.pathname, file.toString()),
             {
               headers: {
-                "content-type": "text/html"
+                "content-type": "text/html",
+                // cors headers
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Headers": "*",
+
+                // cross origin isolation
+                "Cross-Origin-Embedder-Policy": "require-corp",
+                "Cross-Origin-Opener-Policy": "same-origin"
               }
             }
           )

@@ -5,9 +5,9 @@ import { useRef } from "react"
 import { useStore } from "statery"
 import { Vector3, Quaternion } from "three"
 import { lerp } from "three/src/math/MathUtils"
-import { controller } from "../../input"
-import { game } from "../game"
-import { store } from "./editor"
+import { controller } from "../input"
+import { game } from "../engine/game"
+import { store } from "../engine/systems/editor"
 
 declare global {
   export interface Components {
@@ -28,7 +28,7 @@ const velocity = new Vector3()
 const players = game.world.with("controller", "transform")
 const quat = new Quaternion()
 
-export function ControlledMovementSystem() {
+export function TopDownControlledMovementSystem() {
   const { editor } = useStore(store)
   useFrame((_, dt) => {
     if (editor) {

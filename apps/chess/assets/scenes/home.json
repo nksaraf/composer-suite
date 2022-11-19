@@ -7,9 +7,22 @@
     "name": "Tree",
     "script": "/src/scripts/tree.tsx",
     "transform": {
-      "position": [9.629012242319803, 0, -6.718835092424175],
-      "rotation": [0, 0, 0, "XYZ"],
-      "scale": [1, 1, 1]
+      "position": [
+        9.629012242319803,
+        0,
+        -6.718835092424175
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        "XYZ"
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
     }
   },
   {
@@ -20,17 +33,43 @@
       "type": "thirdPerson"
     },
     "transform": {
-      "position": [-1e-323, 9.999999999999995, 3.999999999999999],
-      "rotation": [-1.190289949682532, 0, 0, "XYZ"],
-      "scale": [1, 1, 1]
+      "position": [
+        -5e-324,
+        9.999999999999993,
+        3.9999999999999996
+      ],
+      "rotation": [
+        -1.1902899496825317,
+        0,
+        0,
+        "XYZ"
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
     }
   },
   {
     "name": "Ground",
     "transform": {
-      "position": [0, -7.105427357601002e-15, 0],
-      "rotation": [-1.5707963267948966, 0, 0, "XYZ"],
-      "scale": [50, 50, 50]
+      "position": [
+        0,
+        -7.105427357601002e-15,
+        0
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0,
+        "XYZ"
+      ],
+      "scale": [
+        50,
+        50,
+        50
+      ]
     },
     "physics": {
       "type": "fixed"
@@ -60,9 +99,22 @@
       "height": 10
     },
     "transform": {
-      "position": [0, 0.3, 0],
-      "rotation": [-1.5707963267948966, 0, 0, "XYZ"],
-      "scale": [1, 1, 1]
+      "position": [
+        0,
+        0.3,
+        0
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0,
+        "XYZ"
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
     }
   },
   {
@@ -70,30 +122,76 @@
     "script": "/src/scripts/player.tsx",
     "controller": {
       "movement": {
-        "velocity": [0, 0, 0],
-        "decceleration": [-0.0005, -0.0001, -5],
-        "acceleration": [1, 0.5, 20]
+        "velocity": [
+          0,
+          0,
+          0
+        ],
+        "decceleration": [
+          -0.0005,
+          -0.0001,
+          -5
+        ],
+        "acceleration": [
+          1,
+          0.5,
+          20
+        ]
       }
     },
     "gltf": {
       "url": "/models/animals/Adventurer.gltf"
     },
     "cameraTarget": {
-      "positionOffset": [0, 10, 4],
-      "lookAtOffset": [0, 0, 0]
+      "positionOffset": [
+        0,
+        10,
+        4
+      ],
+      "lookAtOffset": [
+        0,
+        0,
+        0
+      ]
     },
     "transform": {
-      "position": [0, -9.325873406851315e-15, 0],
-      "rotation": [0, 0, 0, "XYZ"],
-      "scale": [1, 1, 1]
+      "position": [
+        0,
+        -9.325873406851315e-15,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        "XYZ"
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
     }
   },
   {
     "name": "Light",
     "transform": {
-      "position": [5.571024542982639, 22.927196932393798, 18.48846042336374],
-      "rotation": [0, 0, 0, "XYZ"],
-      "scale": [1, 1, 1]
+      "position": [
+        5.571024542982639,
+        22.927196932393798,
+        18.48846042336374
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        "XYZ"
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
     },
     "directionalLight": {
       "intensity": 1,

@@ -64,6 +64,9 @@ importers:
     specifiers:
       '@dimforge/rapier3d-compat': ^0.9.0
       '@hattip/adapter-node': ^0.0.22
+      '@hello-worlds/core': ^0.0.6
+      '@hello-worlds/planets': ^0.0.11
+      '@hello-worlds/react': ^0.0.11
       '@hmans/r3f-create-loader': workspace:^0.0.3
       '@hmans/r3f-shared-resource': ^0.1.0
       '@hmans/things': ^0.0.6
@@ -102,6 +105,7 @@ importers:
       shader-composer: workspace:^0.4.6
       shader-composer-r3f: ^0.4.5
       shader-composer-toybox: ^0.1.3
+      simplex-noise: ^2.4.0
       state-composer: ^0.1.0
       statery: ^0.6.2
       three: ^0.145.0
@@ -117,6 +121,9 @@ importers:
     dependencies:
       '@dimforge/rapier3d-compat': 0.9.0
       '@hattip/adapter-node': 0.0.22
+      '@hello-worlds/core': 0.0.6
+      '@hello-worlds/planets': 0.0.11_qm2vxorysqxssqampzkml7gllu
+      '@hello-worlds/react': 0.0.11_feys3hbcko5pnjugaoswxjnpmm
       '@hmans/r3f-create-loader': link:../../packages/hmans-r3f-create-loader
       '@hmans/r3f-shared-resource': 0.1.0_zoourtuqs6jpz5hshrv5fac7t4
       '@hmans/things': 0.0.6_zoourtuqs6jpz5hshrv5fac7t4
@@ -150,6 +157,7 @@ importers:
       shader-composer: link:../../packages/shader-composer
       shader-composer-r3f: link:../../packages/shader-composer-r3f
       shader-composer-toybox: link:../../packages/shader-composer-toybox
+      simplex-noise: 2.4.0
       state-composer: link:../../packages/state-composer
       statery: 0.6.2_react@18.2.0
       three: 0.145.0
@@ -2592,6 +2600,44 @@ packages:
     dependencies:
       '@hattip/core': 0.0.22
       node-fetch-native: 0.1.8
+    dev: false
+
+  /@hello-worlds/core/0.0.6:
+    resolution: {integrity: sha512-jMPT9t6SrLvfpnm7kr3SUlYmf4Z2x2Fny4LBFPKwEYvBHZMV0zfbkQ+6ufO/SaVirIMdL7Omr8SHcVwm8szgrA==}
+    dependencies:
+      rand-seed: 1.0.2
+    dev: false
+
+  /@hello-worlds/planets/0.0.11_qm2vxorysqxssqampzkml7gllu:
+    resolution: {integrity: sha512-J2ZPrtCYUWrZ+Yd9mDDhSR4Y2fuHnPeD15hRUDizqGxgQziNwbvhWvtBLjjFcI26yVkD2O8a7tfAUjbaklGj1g==}
+    peerDependencies:
+      '@hello-worlds/core': 0.0.6
+      three: ^0.142.0
+    dependencies:
+      '@hello-worlds/core': 0.0.6
+      simplex-noise: 3.0.1
+      three: 0.145.0
+    dev: false
+
+  /@hello-worlds/react/0.0.11_feys3hbcko5pnjugaoswxjnpmm:
+    resolution: {integrity: sha512-pw2uGy9mWel0jR/Wq4ruQMxWSa3RTUUBSh3jskxZxmWEs6pxwBQsJVUUSEmxHdr+pZ5/wQPUjWdhoR5G2mECDw==}
+    peerDependencies:
+      '@hello-worlds/core': 0.0.6
+      '@hello-worlds/planets': 0.0.11
+      '@react-three/drei': '>=9.0'
+      '@react-three/fiber': '>=8.0'
+      react: ^18.0.0
+      react-dom: ^18.0.0
+      three: ^0.142.0
+    dependencies:
+      '@hello-worlds/core': 0.0.6
+      '@hello-worlds/planets': 0.0.11_qm2vxorysqxssqampzkml7gllu
+      '@react-three/drei': 9.34.3_zoourtuqs6jpz5hshrv5fac7t4
+      '@react-three/fiber': 8.8.9_ee34sidbpuk5ebd4phepfgxxdi
+      react: 18.2.0
+      react-dom: 18.2.0_react@18.2.0
+      three: 0.145.0
+      three-stdlib: 2.17.2_three@0.145.0
     dev: false
 
   /@hmans/event/0.2.0:
@@ -8828,6 +8874,10 @@ packages:
       zustand: 3.7.2_react@18.2.0
     dev: false
 
+  /rand-seed/1.0.2:
+    resolution: {integrity: sha512-Nu4jxelXx2hKyZJQvkRcUyc1n1ZDQk/VUYmY3hxYfXYGrMfCFqsJ9O6r5jtpt8KjqbllCB8qnIB86Oqy4s5gdw==}
+    dev: false
+
   /randomish/0.1.4:
     resolution: {integrity: sha512-Apk+kYQjTJPuvg2MvxhmUcdxPjkzUl02LjxOn8UjERW338PQKsn2lFVf/mjSd1UMcRea4eHWrnVzoCBo0wEfrw==}
 
@@ -9497,6 +9547,10 @@ packages:
 
   /simplex-noise/2.4.0:
     resolution: {integrity: sha512-OjyDWm/QZjVbMrPxDVi9b2as+SeNn9EBXlrWVRlFW+TSyWMSXouDryXkQN0vf5YP+QZKobrmkvx1eQYPLtuqfw==}
+    dev: false
+
+  /simplex-noise/3.0.1:
+    resolution: {integrity: sha512-eww0SFiWLyOaUKQMJ7gbdvQJvULeJdM/Y4BiC3rrOQnYHo+MSPh465/qeXSZkpTdB9/HthumpnYD3DobZweBBQ==}
     dev: false
 
   /sisteransi/1.0.5:
