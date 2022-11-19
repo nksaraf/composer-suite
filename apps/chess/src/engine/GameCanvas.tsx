@@ -49,7 +49,14 @@ const client = new QueryClient({
 export const GameCanvas = ({ children, ...props }: RC.CanvasProps) => {
   return (
     <>
-      <RC.Canvas dpr={1} shadows={true} {...props}>
+      <RC.Canvas
+        dpr={1}
+        shadows={true}
+        gl={{
+          alpha: true
+        }}
+        {...props}
+      >
         <Controller />
         <RC.RenderPipeline updatePriority={Stage.Render}>
           <QueryClientProvider client={client}>

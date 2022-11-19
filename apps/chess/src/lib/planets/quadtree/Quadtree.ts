@@ -26,7 +26,7 @@ export class QuadTree {
     const s = params.size
     const b = new THREE.Box3(
       new THREE.Vector3(-s, -s, 0),
-      new THREE.Vector3(s, s, 0),
+      new THREE.Vector3(s, s, 0)
     )
     this.origin = params.origin
     this.root = {
@@ -35,7 +35,7 @@ export class QuadTree {
       center: b.getCenter(new THREE.Vector3()),
       sphereCenter: b.getCenter(new THREE.Vector3()),
       size: b.getSize(new THREE.Vector3()),
-      root: true,
+      root: true
     }
     this.root.sphereCenter = this.root.center.clone()
     this.root.sphereCenter.applyMatrix4(this.params.localToWorld)
@@ -93,19 +93,19 @@ export class QuadTree {
     // Bottom right
     const b2 = new THREE.Box3(
       new THREE.Vector3(midpoint.x, child.bounds.min.y, 0),
-      new THREE.Vector3(child.bounds.max.x, midpoint.y, 0),
+      new THREE.Vector3(child.bounds.max.x, midpoint.y, 0)
     )
 
     // Top left
     const b3 = new THREE.Box3(
       new THREE.Vector3(child.bounds.min.x, midpoint.y, 0),
-      new THREE.Vector3(midpoint.x, child.bounds.max.y, 0),
+      new THREE.Vector3(midpoint.x, child.bounds.max.y, 0)
     )
 
     // Top right
     const b4 = new THREE.Box3(midpoint, child.bounds.max)
 
-    const children = [b1, b2, b3, b4].map(b => {
+    const children = [b1, b2, b3, b4].map((b) => {
       const center = b.getCenter(new THREE.Vector3())
       const sphereCenter = center.clone()
       sphereCenter.applyMatrix4(this.params.localToWorld)
@@ -117,7 +117,7 @@ export class QuadTree {
         children: [],
         size: b.getSize(new THREE.Vector3()),
         sphereCenter,
-        center,
+        center
       }
     })
 

@@ -18,9 +18,9 @@ import { DirectionalLightProps, useFrame, useThree } from "@react-three/fiber"
 import { Euler, MathUtils, Object3D, Vector3 } from "three"
 import { TransformControls as TransformControlsImpl } from "three-stdlib"
 import { useKeyboardShortcuts } from "../lib/useKeyboardShortcuts"
-import { useEffect, useRef, useState } from "react"
+import { memo, useEffect, useRef, useState } from "react"
 import { usePersistedControls } from "../lib/usePersistedControls"
-
+import { EyeClosedIcon, EyeOpenIcon } from "@radix-ui/react-icons"
 import { selectButton } from "../lib/selectButton"
 import { game } from "../game"
 import { With } from "miniplex"
@@ -58,7 +58,11 @@ export function selectEntity(entity: Components) {
 let i = 0
 
 const EntityLabel = styled("div", {
-  color: "$highlight2"
+  color: "$highlight2",
+  display: "flex",
+  flexDirection: "flex-row",
+  alignItems: "center",
+  justifyContent: "space-between"
 })
 
 const entities = createPlugin({
@@ -75,18 +79,43 @@ const entities = createPlugin({
     return (
       <div>
         {game.world.entities.map((entity) => (
-          <EntityLabel
-            onClick={(e) => {
-              selectEntity(entity)
-            }}
-          >
-            {entity.name}
-          </EntityLabel>
+          <EntityItem entity={entity} key={entity} />
         ))}
       </div>
     )
   }
 })
+
+function EntityItem({ entity }: { entity: Components }): JSX.Element {
+  const [visible, setVisible] = useState(true)
+  return (
+    <EntityLabel>
+      <span
+        style={{
+          marginLeft: "4px"
+        }}
+        onClick={(e) => {
+          selectEntity(entity)
+        }}
+      >
+        {entity.name}
+      </span>
+      <span
+        onClick={(e) => {
+          setVisible((v) => !v)
+          if (entity.mesh$) {
+            entity.mesh$.visible = !entity.mesh$.visible
+          }
+          if (entity.gltfMesh$) {
+            entity.gltfMesh$.visible = !entity.gltfMesh$.visible
+          }
+        }}
+      >
+        {visible ? <EyeOpenIcon /> : <EyeClosedIcon />}
+      </span>
+    </EntityLabel>
+  )
+}
 
 export default function EditorSystem() {
   const { editor } = useStore(store)
@@ -382,8 +411,8 @@ export function registerComponent<T extends keyof Components>(
   componentLibrary[name] = comp
 }
 
-function EntityControls({ entity }: { entity: Components }) {
-  console.log("selected", entity)
+const EntityControls = memo(({ entity }: { entity: Components }) => {
+  console.log(entity)
   const scene = useThree((s) => s.scene)
   const [run, setRun] = useState(0)
   const [, set] = useControls(() => {
@@ -451,4 +480,4 @@ function EntityControls({ entity }: { entity: Components }) {
   })
 
   return null
-}
+})

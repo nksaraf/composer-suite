@@ -1,12 +1,38 @@
 import { defineConfig } from "vite"
 import react from "@vitejs/plugin-react"
 
-import { resolve } from "path"
+import path, { join, resolve } from "path"
 import fs from "fs-extra"
 import _debug from "debug"
 import tsconfiPaths from "vite-tsconfig-paths"
 import type { Plugin, ResolvedConfig, ViteDevServer } from "vite"
 import { createMiddleware } from "@hattip/adapter-node"
+import { GLTFLoader, DRACOLoader } from "three-stdlib"
+import esbuild from "esbuild"
+
+globalThis.fetch = undefined
+
+const d = await import("@react-three/gltfjsx/src/gltfjsx")
+// const gltfLoader = new GLTFLoader()
+// const dracoloader = new DRACOLoader()
+// dracoloader.setDecoderPath("https://www.gstatic.com/draco/v1/decoders/")
+// gltfLoader.setDRACOLoader(dracoloader)
+// let internalFetch = fetch
+// globalThis.ProgressEvent = class ProgressEvent {}
+// globalThis.fetch = async (req) => {
+//   console.log(new URL(req.url).pathname)
+//   let text = fs.readFileSync(
+//     join(__dirname, "assets", new URL(req.url).pathname),
+//     "utf-8"
+//   )
+//   console.log(text)
+//   return new Response(text, {
+//     status: 200,
+//     headers: {
+//       "Content-Type": "application/json"
+//     }
+//   })
+// }
 
 function hattip({
   handler
@@ -50,6 +76,63 @@ export default defineConfig({
           res.setHeader("Cross-Origin-Embedder-Policy", "require-corp")
           next()
         })
+      }
+    },
+    {
+      name: "gltfjsx",
+      resolveId(id) {
+        if (id.endsWith("?gltfjsx")) {
+          console.log("resolving", id)
+          return id
+        }
+      },
+      async load(id) {
+        if (id.endsWith("?gltfjsx")) {
+          console.log("loading", id)
+          let fp = id
+            .replace("@assets", "assets")
+            .replace("?gltfjsx", "")
+            .replace(".jsx", "")
+          const js = await d.default(fp, "Ghost.jsx", {})
+
+          const { name } = path.parse(fp)
+          let code = fs.readFileSync("Ghost.jsx", "utf-8")
+
+          console.log({ name, fp })
+
+          code = code
+            .replace(`'/${name}.gltf'`, `'${fp.replace(process.cwd(), "")}'`)
+            .replace(`'/${name}.gltf'`, `'${fp.replace(process.cwd(), "")}'`)
+            .replace(
+              "const { actions } = useAnimations(animations, group)",
+              `
+            const actions = useAnimations(animations, group);
+            React.useLayoutEffect(() => {
+              props.entity.mixer$ = actions
+            }, [props.entity, actions])
+            `
+            )
+            .replace(
+              `return (`,
+              `
+            console.log(props)
+            React.useLayoutEffect(() => {
+              if (props.entity) {
+                props.game.world.addComponent(props.entity, "gltfMesh$", group.current);
+                props.entity.gltfMesh$ = group.current
+                
+              }
+            }, [props.entity, nodes])
+            return (
+            `
+            )
+          console.log(code)
+
+          return esbuild.transformSync(code, {
+            jsx: "automatic",
+            loader: "jsx"
+          }).code
+        }
       }
     },
     hattip({

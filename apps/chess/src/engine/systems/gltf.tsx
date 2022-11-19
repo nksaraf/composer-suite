@@ -1,4 +1,4 @@
-import { Suspense, useRef, useState } from "react"
+import { Suspense, useMemo, useRef, useState } from "react"
 import { registerComponent, selectEntity } from "./editor"
 import { folder } from "leva"
 import { game } from "../game"
@@ -6,10 +6,12 @@ import { With } from "miniplex"
 import { useAnimations, useGLTF, useHelper } from "@react-three/drei"
 import { useLayoutEffect } from "react"
 import { store } from "../systems/editor"
-import { useFrame } from "@react-three/fiber"
+import { useFrame, useGraph } from "@react-three/fiber"
 import { BoxHelper, Group } from "three"
 import { useEffect } from "react"
-
+import { useQuery } from "@tanstack/react-query"
+import { GLTFLoader, DRACOLoader } from "three-stdlib"
+import { ScriptedEntity } from "./script"
 declare global {
   export interface Components {
     gltf?: {
@@ -54,6 +56,13 @@ registerComponent("gltf", {
 const gltfs = game.world.with("gltf")
 
 function Gltf({ entity }: { entity: With<Components, "gltf"> }) {
+  if (entity.gltf.import) {
+    return (
+      <Suspense>
+        <ScriptedEntity entity={entity} script={entity.gltf.import} />
+      </Suspense>
+    )
+  }
   const [url, setUrl] = useState(entity.gltf.url)
   entity.gltf$ = { setUrl }
   return (
@@ -90,12 +99,17 @@ export function Model({ url, ...props }: { url: string }) {
   const entity = game.useCurrentEntity()!
   const data = useGLTF(url)
   const group = useRef<Group>()
+  let child = data.scene.children[0]
   const animations = useAnimations(data.animations, group)
+  const clone = useMemo(() => child.clone(), [child])
+  console.log(...data.scene.children, clone)
+
   useEffect(() => {
-    entity.gltfMesh$ = data.scene
+    entity.gltfMesh$ = clone
+    console.log(data)
     entity.gltf$ = Object.assign(entity.gltf$ ?? {}, data)
     entity.mixer$ = animations
-  }, [entity, data, animations])
+  }, [entity, clone, data])
 
   return (
     <game.Component name="gltfMesh$">
@@ -106,7 +120,7 @@ export function Model({ url, ...props }: { url: string }) {
           selectEntity(entity)
         }}
       >
-        <primitive object={data.scene} key={data.scene} />
+        <primitive object={clone} key={clone} />
       </group>
     </game.Component>
   )

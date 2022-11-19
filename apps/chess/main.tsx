@@ -2,6 +2,7 @@ import React from "react"
 import ReactDOM from "react-dom/client"
 import * as SC from "shader-composer"
 import "./index.css"
+import "./assets/Ghost.gltf?gltfjsx"
 
 import * as UI from "ui-composer"
 import { StartScreen } from "./src/lib/StartScreen"
@@ -22,9 +23,10 @@ import { Instances, GroundSystem as TerrainSystem } from "./src/lib/terrain"
 import { GridSystem } from "./src/scripts/grid"
 import { TopDownControlledMovementSystem } from "./src/scripts/top-down-controller"
 import worker from "./src/scripts/terrain-worker?worker"
-import { Vector3 } from "three"
+import { RepeatWrapping, Vector3 } from "three"
 import { useFrame } from "@react-three/fiber"
 import { game } from "vinxi/game"
+import { useTexture } from "@react-three/drei"
 const vel = new Vector3(0, 0, 0)
 function Systems() {
   return (
@@ -73,16 +75,20 @@ function Terrain() {
     const [player] = players
     vel.copy(player.transform.position)
   })
+  const map = useTexture("/assets/textures/green_grass.jpg")
+  map.wrapS = RepeatWrapping
+  map.wrapT = RepeatWrapping
+  map.repeat.set(100, 100)
   return (
     <Planet
       worker={worker}
       lodOrigin={vel}
-      radius={100}
-      minCellResolution={1}
-      minCellSize={1}
-      position={new Vector3(0, -100, 0)}
+      radius={10000}
+      minCellResolution={64}
+      minCellSize={10}
+      position={new Vector3(0, -10000, 0)}
     >
-      <meshStandardMaterial color="blue" wireframe />
+      <meshStandardMaterial map={map} />
     </Planet>
   )
 }

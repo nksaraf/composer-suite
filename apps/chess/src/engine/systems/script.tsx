@@ -2,14 +2,15 @@ import { lazy, Suspense, useMemo } from "react"
 import { game } from "../game"
 
 let map = {}
-function ScriptedEntity({ entity }) {
+export function ScriptedEntity({ entity, script }) {
   const Component = useMemo(() => {
-    if (map[entity.script]) return map[entity.script]
-    let el = lazy(() => import(/* @vite-ignore */ entity.script))
-    map[entity.script] = el
+    if (map[script]) return map[script]
+    console.log(script)
+    let el = lazy(() => import(/* @vite-ignore */ script))
+    map[script] = el
     return el
-  }, [])
-  return <Component entity={entity} />
+  }, [entity, script])
+  return <Component entity={entity} game={game} />
 }
 const scripts = game.world.with("script")
 export function ScriptSystem() {
@@ -18,7 +19,7 @@ export function ScriptSystem() {
       {(entity) => (
         <game.Entity entity={entity}>
           <Suspense>
-            <ScriptedEntity entity={entity} />
+            <ScriptedEntity entity={entity} script={entity.script} />
           </Suspense>
         </game.Entity>
       )}

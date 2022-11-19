@@ -25,34 +25,34 @@ export class CubicQuadTree {
     m.premultiply(new THREE.Matrix4().makeTranslation(0, r, 0))
     transforms.push(m)
 
-    // -Y
-    m = new THREE.Matrix4()
-    m.makeRotationX(Math.PI / 2)
-    m.premultiply(new THREE.Matrix4().makeTranslation(0, -r, 0))
-    transforms.push(m)
+    // // -Y
+    // m = new THREE.Matrix4()
+    // m.makeRotationX(Math.PI / 2)
+    // m.premultiply(new THREE.Matrix4().makeTranslation(0, -r, 0))
+    // transforms.push(m)
 
-    // +X
-    m = new THREE.Matrix4()
-    m.makeRotationY(Math.PI / 2)
-    m.premultiply(new THREE.Matrix4().makeTranslation(r, 0, 0))
-    transforms.push(m)
+    // // +X
+    // m = new THREE.Matrix4()
+    // m.makeRotationY(Math.PI / 2)
+    // m.premultiply(new THREE.Matrix4().makeTranslation(r, 0, 0))
+    // transforms.push(m)
 
-    // -X
-    m = new THREE.Matrix4()
-    m.makeRotationY(-Math.PI / 2)
-    m.premultiply(new THREE.Matrix4().makeTranslation(-r, 0, 0))
-    transforms.push(m)
+    // // -X
+    // m = new THREE.Matrix4()
+    // m.makeRotationY(-Math.PI / 2)
+    // m.premultiply(new THREE.Matrix4().makeTranslation(-r, 0, 0))
+    // transforms.push(m)
 
-    // +Z
-    m = new THREE.Matrix4()
-    m.premultiply(new THREE.Matrix4().makeTranslation(0, 0, r))
-    transforms.push(m)
+    // // +Z
+    // m = new THREE.Matrix4()
+    // m.premultiply(new THREE.Matrix4().makeTranslation(0, 0, r))
+    // transforms.push(m)
 
-    // -Z
-    m = new THREE.Matrix4()
-    m.makeRotationY(Math.PI)
-    m.premultiply(new THREE.Matrix4().makeTranslation(0, 0, -r))
-    transforms.push(m)
+    // // -Z
+    // m = new THREE.Matrix4()
+    // m.makeRotationY(Math.PI)
+    // m.premultiply(new THREE.Matrix4().makeTranslation(0, 0, -r))
+    // transforms.push(m)
 
     for (let t of transforms) {
       this.sides.push({
@@ -62,8 +62,8 @@ export class CubicQuadTree {
           size: r,
           minNodeSize: this.params.minNodeSize,
           localToWorld: t,
-          origin: params.origin,
-        }),
+          origin: params.origin
+        })
       })
     }
   }
@@ -74,7 +74,7 @@ export class CubicQuadTree {
     for (let s of this.sides) {
       const side = {
         transform: s.transform,
-        children: s.quadtree.getChildren(),
+        children: s.quadtree.getChildren()
       }
       children.push(side)
     }
@@ -87,6 +87,5 @@ export class CubicQuadTree {
     for (let s of this.sides) {
       s.quadtree.insert(pos)
     }
-    console.log(this)
   }
 }

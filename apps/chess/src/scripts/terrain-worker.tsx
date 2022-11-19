@@ -5,9 +5,8 @@ import { Color } from "three"
 const simpleHeight: ChunkGenerator3Initializer<ThreadParams, number> = (
   data
 ) => {
-  console.log(data)
   return () => {
-    return 1
+    return 0
   }
 }
 // generate a color per-chunk
